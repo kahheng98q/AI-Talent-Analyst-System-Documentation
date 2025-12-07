@@ -173,10 +173,10 @@ As a System, I must block actions that exceed plan limits.
   Fill them out with the right edge cases.
 -->
 
-- What happens when a Company Admin tries to delete their own account? (Should be prevented or warn about losing access).
-- How does the system handle a Stripe webhook failure during an upgrade? (Should retry or maintain old state until confirmed).
-- What happens if a Super Admin impersonates a user who is currently suspended?
-- How does the system handle concurrent edits to Global AI Configurations? (Last write wins vs locking).
+- **Downgrade Handling**: If a company downgrades to a plan with lower limits (e.g., 15/10 candidates), existing data remains accessible (read-only), but new creation is blocked until they are under the limit.
+- **Self-Deletion**: Company Admins cannot delete their own account if they are the only admin; they must assign another admin first.
+- **Stripe Failures**: Webhook failures trigger a retry; if ultimately failed, the subscription remains in the previous state until manual intervention.
+- **Concurrent Config Edits**: Last-write-wins strategy is accepted for Global AI Configs.
 
 ## Requirements _(mandatory)_
 
@@ -185,16 +185,17 @@ As a System, I must block actions that exceed plan limits.
 - **FR-001**: System MUST provide a Super Admin Portal for Company, User, and Group management.
 - **FR-002**: System MUST enforce Role-Based Access Control (Super Admin, Company Admin, HR User).
 - **FR-003**: System MUST implement Multi-tenancy with strong data isolation (silo/dedicated schema logic).
-- **FR-004**: System MUST allow Super Admins to Impersonate any tenant user.
+- **FR-004**: System MUST allow Super Admins to Impersonate any tenant user. [NEEDS CLARIFICATION: Should the end-user be notified via email when a Super Admin impersonates them? (Privacy vs Stealth)]
 - **FR-005**: System MUST provide a Dashboard for MRR, Token Usage, and AI Health monitoring.
 - **FR-006**: System MUST allow Dynamic AI Configuration (Prompts, Models) via UI without deployment.
 - **FR-007**: System MUST handle Subscription management (Stripe integration) and Limit Enforcement.
 - **FR-008**: System MUST support User Invitation via email.
+- **FR-009**: System MUST [NEEDS CLARIFICATION: Should we implement hard caps on AI token usage per company to prevent billing spikes, or just monitor for now?]
 
 ### Key Entities
 
 - **Company**: Tenant organization.
-- **User**: System user with Role.
+- **User**: System user with Role (Soft Delete required for audit trails).
 - **Group**: User collection for permissions.
 - **Plan**: Subscription tier with Limits.
 - **Subscription**: Link between Company and Plan.
@@ -206,6 +207,8 @@ As a System, I must block actions that exceed plan limits.
 
 - **Stripe**: Used for all billing.
 - **Isolation**: Data is filtered by `company_id` at the query level.
+- **Deletion**: "Removing" a user performs a soft delete to preserve historical data.
+- **Impersonation Logging**: All impersonated actions are logged with a specific flag identifying the Super Admin actor.
 
 ## Success Criteria _(mandatory)_
 
