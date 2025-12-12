@@ -1,6 +1,7 @@
 # Feature Specification: SaaS Admin Portal & God Mode
 
 **Feature Branch**: `002-saas-admin-portal`
+
 **Created**: 2025-11-05
 **Status**: Draft
 **Input**: User description: "SaaS Admin Portal for Company, User, and System Management"
@@ -40,20 +41,7 @@ As a Super Admin, I want to assign an admin to a company so they can manage thei
 1. **Given** a Company exists, **When** I create a new User and assign the "Company Admin" role linked to that Company, **Then** the user should be successfully created and linked.
 2. **Given** the new Company Admin user, **When** they log in, **Then** they should have access to the Company Admin portal for their specific company.
 
-### User Story 3 - Manage User Groups (Priority: P2)
-
-As a Super Admin, I want to organize users into groups for easier permission management.
-
-**Why this priority**: Improves manageability of large user bases and granular permission control.
-
-**Independent Test**: Create a group, add users, and verify group membership.
-
-**Acceptance Scenarios**:
-
-1. **Given** I am a Super Admin, **When** I create a "Group" (e.g., "Beta Testers") and add users to it, **Then** the users should be listed as members of that group.
-2. **Given** a group with members, **When** I view the group details, **Then** I should see the correct list of assigned users.
-
-### User Story 4 - Impersonate Tenant (God Mode) (Priority: P1)
+### User Story 3 - Impersonate Tenant (God Mode) (Priority: P1)
 
 As a Super Admin, I want to log in as a specific user to debug issues exactly as they see them.
 
@@ -66,6 +54,21 @@ As a Super Admin, I want to log in as a specific user to debug issues exactly as
 1. **Given** I am a Super Admin viewing a user record, **When** I click "Login As", **Then** I should be redirected to the app authenticated as that user.
 2. **Given** I am impersonating a user, **When** I look at the interface, **Then** I should see a persistent "Impersonating" banner with an "Exit" button.
 3. **Given** I am impersonating, **When** I click "Exit", **Then** I should be returned to the Super Admin session.
+
+---
+
+### User Story 4 - Manage Client Company Super Admins (Priority: P2)
+
+As a Backoffice Super Admin, I want to manage the designated "Super Admin" for a specific client company (e.g., reset their credentials, changing the owner) so that I can resolve high-level access issues or security incidents.
+
+**Why this priority**: Critical for handling "break-glass" scenarios where a customer is locked out or an admin account is compromised.
+
+**Independent Test**: Select a specific company and forcibly reset the password/MFA for their main admin user.
+
+**Acceptance Scenarios**:
+
+1. **Given** a client company where the admin has lost access, **When** I navigate to the Company Details > "Admins" tab and click "Reset Credentials", **Then** a temporary password or reset link is generated for that specific user.
+2. **Given** a dispute where the original admin left the company, **When** I promote a different user in that company to "Company Super Admin" status, **Then** the new user gains full administrative rights over their tenant.
 
 ### B. Super Admin - System & AI Management (God Mode)
 
@@ -123,7 +126,7 @@ As a Company Admin, I want to manage my team's access.
 1. **Given** I am a Company Admin, **When** I view my user list, **Then** I should see all users belonging to my company.
 2. **Given** an employee has left, **When** I remove/deactivate their user account, **Then** they should no longer be able to log in.
 
-### User Story 9 - Invite Users (Priority: P2)
+### User Story 11 - Invite Users (Priority: P2)
 
 As a Company Admin, I want to invite colleagues via email.
 
@@ -182,26 +185,29 @@ As a System, I must block actions that exceed plan limits.
 
 ### Functional Requirements
 
-- **FR-001**: System MUST provide a Super Admin Portal for Company, User, and Group management.
-- **FR-002**: System MUST enforce Role-Based Access Control (Super Admin, Company Admin, HR User).
-- **FR-003**: System MUST implement Multi-tenancy with strong data isolation (silo/dedicated schema logic).
-- **FR-004**: System MUST allow Super Admins to Impersonate any tenant user. [NEEDS CLARIFICATION: Should the end-user be notified via email when a Super Admin impersonates them? (Privacy vs Stealth)]
-- **FR-005**: System MUST provide a Dashboard for MRR, Token Usage, and AI Health monitoring.
-- **FR-006**: System MUST allow Dynamic AI Configuration (Prompts, Models) via UI without deployment.
-- **FR-007**: System MUST handle Subscription management (Stripe integration) and Limit Enforcement.
-- **FR-008**: System MUST support User Invitation via email.
-- **FR-009**: System MUST [NEEDS CLARIFICATION: Should we implement hard caps on AI token usage per company to prevent billing spikes, or just monitor for now?]
+- **FR-001**: System MUST provide a Super Admin Portal for Company and User management.
+- **FR-002**: System MUST implement Multi-tenancy with strong data isolation (silo/dedicated schema logic).
+- **FR-003**: System MUST allow Super Admins to Impersonate any tenant user. [NEEDS CLARIFICATION: Should the end-user be notified via email when a Super Admin impersonates them? (Privacy vs Stealth)]
+- **FR-004**: System MUST provide a Dashboard for MRR, Token Usage, and AI Health monitoring.
+- **FR-005**: System MUST allow Dynamic AI Configuration (Prompts, Models) via UI without deployment.
+- **FR-006**: System MUST handle Subscription management (Stripe integration) and Limit Enforcement.
+- **FR-007**: System MUST support User Invitation via email.
+- **FR-008**: System MUST [NEEDS CLARIFICATION: Should we implement hard caps on AI token usage per company to prevent billing spikes, or just monitor for now?]
+- **FR-009**: System MUST integrate with Feature 004 (User Authorization Groups & Permissions) for RBAC enforcement.
 
 ### Key Entities
 
 - **Company**: Tenant organization.
 - **User**: System user with Role (Soft Delete required for audit trails).
-- **Group**: User collection for permissions.
 - **Plan**: Subscription tier with Limits.
 - **Subscription**: Link between Company and Plan.
 - **Invitation**: Pending user access.
 - **SystemSetting**: Global configs (e.g., active model).
 - **TokenUsage**: Cost tracking records.
+
+### Dependencies
+
+- **Feature 004**: User Authorization Groups & Permissions (for RBAC and permission enforcement).
 
 ## Assumptions
 
