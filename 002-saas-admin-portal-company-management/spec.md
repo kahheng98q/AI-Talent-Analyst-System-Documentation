@@ -41,22 +41,6 @@ As a Super Admin, I want to assign an admin to a company so they can manage thei
 1. **Given** a Company exists, **When** I create a new User and assign the "Company Admin" role linked to that Company, **Then** the user should be successfully created and linked.
 2. **Given** the new Company Admin user, **When** they log in, **Then** they should have access to the Company Admin portal for their specific company.
 
-### User Story 3 - Impersonate Tenant (God Mode) (Priority: P1)
-
-As a Super Admin, I want to log in as a specific user to debug issues exactly as they see them.
-
-**Why this priority**: Critical for support and debugging; allows rapid resolution of user-reported issues.
-
-**Independent Test**: Trigger "Login As" and verify the session context changes to the target user.
-
-**Acceptance Scenarios**:
-
-1. **Given** I am a Super Admin viewing a user record, **When** I click "Login As", **Then** I should be redirected to the app authenticated as that user.
-2. **Given** I am impersonating a user, **When** I look at the interface, **Then** I should see a persistent "Impersonating" banner with an "Exit" button.
-3. **Given** I am impersonating, **When** I click "Exit", **Then** I should be returned to the Super Admin session.
-
----
-
 ### User Story 4 - Manage Client Company Super Admins (Priority: P2)
 
 As a Backoffice Super Admin, I want to manage the designated "Super Admin" for a specific client company (e.g., reset their credentials, changing the owner) so that I can resolve high-level access issues or security incidents.
@@ -126,7 +110,7 @@ As a Company Admin, I want to manage my team's access.
 1. **Given** I am a Company Admin, **When** I view my user list, **Then** I should see all users belonging to my company.
 2. **Given** an employee has left, **When** I remove/deactivate their user account, **Then** they should no longer be able to log in.
 
-### User Story 11 - Invite Users (Priority: P2)
+### User Story 9 - Invite Users (Priority: P2)
 
 As a Company Admin, I want to invite colleagues via email.
 
@@ -187,7 +171,6 @@ As a System, I must block actions that exceed plan limits.
 
 - **FR-001**: System MUST provide a Super Admin Portal for Company and User management.
 - **FR-002**: System MUST implement Multi-tenancy with strong data isolation (silo/dedicated schema logic).
-- **FR-003**: System MUST allow Super Admins to Impersonate any tenant user. [NEEDS CLARIFICATION: Should the end-user be notified via email when a Super Admin impersonates them? (Privacy vs Stealth)]
 - **FR-004**: System MUST provide a Dashboard for MRR, Token Usage, and AI Health monitoring.
 - **FR-005**: System MUST allow Dynamic AI Configuration (Prompts, Models) via UI without deployment.
 - **FR-006**: System MUST handle Subscription management (Stripe integration) and Limit Enforcement.
@@ -221,6 +204,5 @@ As a System, I must block actions that exceed plan limits.
 ### Measurable Outcomes
 
 - **SC-001**: Onboard new company in < 5 mins.
-- **SC-002**: Support tickets requiring login resolved 30% faster via Impersonation.
 - **SC-003**: System supports 1,000 concurrent companies.
 - **SC-004**: 95% of admin actions complete in < 2 seconds.

@@ -87,11 +87,9 @@ Company Admins need automated alerts when token consumption reaches critical thr
 
 3. **Given** my company has used exactly 20M tokens (100%) of the allocated 20M, **When** the system calculates remaining credits, **Then** I receive an email notification with subject "Token Usage Alert: 100% Limit Reached - Overage Charges Apply" and body explaining overage pricing and upgrade options
 
-4. **Given** my company has used exactly 20M tokens (100%), **When** I log in to the system, **Then** I see a modal dialog (cannot be dismissed until acknowledged): "🚨 You have used 100% of your token credits. Further usage will incur extra charges at $30 per 1M tokens. [View Upgrade Options] [Acknowledge]"
+4. **Given** I have already received a 80% notification, **When** my usage increases from 16M to 17M (still under 100%), **Then** I do NOT receive duplicate 80% notifications (notification sent once per threshold per billing cycle)
 
-5. **Given** I have already received a 80% notification, **When** my usage increases from 16M to 17M (still under 100%), **Then** I do NOT receive duplicate 80% notifications (notification sent once per threshold per billing cycle)
-
-6. **Given** I have crossed 100% usage threshold, **When** a new billing cycle starts and my credits reset, **Then** the notification flags are reset and I can receive new threshold notifications for the new cycle
+5. **Given** I have crossed 100% usage threshold, **When** a new billing cycle starts and my credits reset, **Then** the notification flags are reset and I can receive new threshold notifications for the new cycle
 
 ---
 
@@ -115,10 +113,40 @@ For the initial release, Company Admins can top up account balance via bank tran
 
 ---
 
+### User Story 6 - Invitation Hold, Settlement & Expiry Refund (Priority: P1)
+
+Company Admins need reliable control of spending power: invitations should reserve funds up-front, consume on completion, and automatically refund on expiry to prevent over-inviting and dangling holds.
+
+**Why this priority**: Prevents overallocation and ensures accurate, timely accounting of funds. Directly impacts the ability to run interviews without billing surprises and avoids lock-ups of unused funds.
+
+**Independent Test**: Can be fully tested by sending invitations with known estimated costs, starting/completing an interview to settle charges, and waiting (or simulating time) for expiry to confirm reserved fund release and notifications. No dependencies on external payment gateways.
+
+**Acceptance Scenarios**:
+
+1. **Given** I am a Company Admin with `Total Balance = $300` and `Reserved Balance = $0`, **When** I click `Send Invitation` for an interview with estimated cost `$100`, **Then** the system checks `Available = Total - Reserved = $300` and reserves `$100` creating a `ReservationHold`, resulting in `Reserved = $100` and `Available = $200`.
+
+2. **Given** I have `Available = $80` and attempt to send an invitation with estimated cost `$100`, **When** I click `Send Invitation`, **Then** the action is blocked with an error "Insufficient available balance ($80). Please top up or cancel existing holds" and no reservation is created.
+
+3. **Given** a reserved invitation for `$100` exists, **When** the Candidate starts and completes the interview consuming `$92` of tokens, **Then** the reservation is cleared, `$92` is deducted from `Total Balance`, and `$8` is released (no longer reserved), updating `Reserved` and `Available` accordingly and recording a settlement `BillingTransaction`.
+
+4. **Given** a reserved invitation for `$100` exists, **When** the Candidate consumes `$120` of tokens (exceeds estimate), **Then** the reservation is cleared and `$120` is deducted from `Total Balance` with a shortfall adjustment; if this causes `Available` to go below `$0`, the system triggers System Lock on HR functions until funds are replenished.
+
+5. **Given** an invitation was created 4 days ago and is still `Pending`, **When** the hourly expiry job runs, **Then** the invitation status changes to `Expired`, the `$100` reserved amount is released back to `Available`, a `reservation_release` `BillingTransaction` is recorded, and HR admins receive a summary notification of credits returned.
+
+6. **Given** multiple pending invitations (e.g., 3 holds totaling `$250`) have passed 3 days, **When** the expiry job runs, **Then** all eligible invitations are expired in a single run, `$250` is released back to `Available`, and a single notification summarizes the count and total credited.
+
+7. **Given** the expiry job encounters a transient failure after expiring an invitation but before releasing funds, **When** the job retries, **Then** the operation is idempotent: no double-expiry occurs, and the release is applied exactly once, with audit logs reflecting the final state.
+
+---
+
 ### Edge Cases
 
 - What happens when balance reaches $0 mid-interview? (CLARIFIED: Block further token consumption immediately. Interview cannot proceed without available balance. User must top up to continue.)
+- What happens when balance approaches $0 during a locked session? (NEW: If session is already locked at start with `current_balance > 0`, allow the interview to finish gracefully without mid-sentence interruption. Compute charges post-interview. If the post-charge makes balance negative, trigger System Lock for HR functions until top-up restores balance.)
 - How does the system handle concurrent top-up transactions? (Queue transactions, process sequentially, prevent race conditions on balance updates)
+- What happens if invitations exceed Available Balance? (NEW: Block `Send Invitation` if `available_balance < estimated_cost`; display available vs reserved amounts to guide HR.)
+- What if actual interview cost differs from reserved estimate? (NEW: On settlement, refund any excess reservation or charge any shortfall; ensure `BillingTransaction` reflects adjustments.)
+- How to handle concurrent reservation and release operations? (NEW: Use transactional updates with row-level locks to prevent double-reservation or double-release; idempotent job for expiry.)
 - What happens if a bank transfer top-up fails or is reversed after being credited? (Back-office admin manually deducts the amount, system logs adjustment, notify company admin)
 - How are notifications handled for companies with multiple admins? (CLARIFIED: Send to all users with admin flag, future enhancement: notification preferences)
 - What happens when a company cancels their subscription? (Set status to "Cancelled", remaining balance handling per Clarification #14 TBD, disable future token consumption)
@@ -131,6 +159,18 @@ For the initial release, Company Admins can top up account balance via bank tran
 ## Requirements _(mandatory)_
 
 ### Functional Requirements
+
+- **FR-000**: Pre-check before HR invitation: When HR triggers `Send Invitation`, the system MUST verify that `AccountBalance.current_balance > X` (configurable threshold). If the check fails, block the action and display guidance to top up. Log the attempt for audit.
+
+- **FR-031**: Invitation hold reservation: On `Send Invitation`, the system MUST reserve the estimated interview cost by moving funds from Available Balance to Reserved Balance (or creating a Pending Deduction). Formula for Available Balance: `available = total_balance - reserved_balance`. If `available < estimated_cost`, block the action.
+
+- **FR-032**: Reserved balance accounting: The dashboard MUST show both Available Balance and Reserved Balance to reflect spending power and held funds. All authorization checks for token-consuming HR actions MUST use Available Balance, not Total Balance.
+
+- **FR-033**: Interview consumption settlement: When the Candidate completes the interview, the system MUST clear the specific reservation/hold and permanently deduct the actual final cost from Total Balance based on real token usage. If actual cost differs from reserved estimate, adjust accordingly (refund excess or charge shortfall).
+
+- **FR-034**: Invitation expiry refund job: A scheduled background job MUST run hourly to detect invitations with `status = pending` and `created_at > 3 days`. It MUST update status to `expired`, release the reserved amount back to Available Balance, and append a `BillingTransaction` of type `reservation_release` with audit details.
+
+- **FR-035**: Expiry notifications: Upon reservation release, the system MUST notify HR admins with a summary (e.g., "3 invitations expired; $X.00 has been credited back to your available balance") and log the event in `NotificationLog`.
 
 - **FR-001**: System MUST display subscription status (active/suspended/cancelled), subscription start date, and token pricing rate (e.g., "$25 per 1M tokens") on the subscription dashboard
 - **FR-002**: System MUST display current account balance (prepaid funds remaining in USD) and calculate in real-time by subtracting total usage charges from total deposits
@@ -155,6 +195,12 @@ For the initial release, Company Admins can top up account balance via bank tran
 - **FR-021**: System MUST reset notification flags at the start of each new billing cycle
 - **FR-022**: System MUST lock subscription modifications during active processing and display "Change in progress" status
 - **FR-023**: System MUST block all token consumption when account balance reaches zero or remaining tokens reach zero, preventing any service usage until funds/credits are replenished
+
+- **FR-023a**: Candidate session start lock: When a Candidate clicks `Start`, the system MUST verify `current_balance > 0`. If true, the system MUST lock the session (reserve sufficient credit or mark an immutable session lock) so that the AI interview can complete without mid-sentence interruption. If false, block start with a zero-balance modal and top-up CTA.
+
+- **FR-023b**: Graceful interview completion: Once a session is locked and started, AI responses MUST not be interrupted mid-generation. The session MUST complete, and charges are computed at the end of the session.
+
+- **FR-023c**: Post-interview charging and enforcement: After the interview finishes, the system MUST deduct the final cost based on actual tokens consumed. If the deduction causes the balance to be negative, the system MUST immediately trigger System Lock on HR functions (e.g., disable `Send Invitation`, `Create Job`, and other token-consuming operations) until the balance is replenished above zero.
 - **FR-024**: System MUST display prominent warnings when remaining balance falls below the defined low-balance threshold (amount TBD)
 - **FR-025**: System MUST allow Company Admins to initiate account top-ups (prepaid fund deposits) via the designated payment method
 - **FR-026**: System MUST deduct from account balance in real-time as tokens are consumed, updating balance immediately after each token usage event
@@ -176,6 +222,10 @@ For the initial release, Company Admins can top up account balance via bank tran
 - **PaymentMethod**: Stores payment method references (NOT card details) with attributes: id, company_id (FK), type (credit_card/bank_transfer/other), is_active (boolean), payment_gateway_token (tokenized reference from Stripe/PayPal/etc.), card_last_four (for display only), card_expiry_date, billing_address, created_at, updated_at
 
 - **AccountBalance**: Tracks prepaid account balance for post-pay model with attributes: id, company_id (FK), current_balance (monetary amount), currency (fixed: USD), last_top_up_date, last_top_up_amount, total_lifetime_deposits, total_lifetime_usage, created_at, updated_at
+
+- **ReservationHold**: Represents reserved funds tied to invitations with attributes: id, company_id (FK), invitation_id (FK), estimated_cost_amount, status (active/cleared/expired/released), reserved_at, released_at (nullable), cleared_at (nullable), created_at, updated_at. The sum of active holds contributes to `reserved_balance`.
+
+- Update `AccountBalance` to include: `reserved_balance` (sum of active holds) and derived `available_balance = current_balance - reserved_balance` for display and checks.
 
 - **TopUpTransaction**: Records all account top-up (deposit) events with attributes: id, company_id (FK), amount, payment_method_id (FK), transaction_date, status (pending/completed/failed), payment_gateway_transaction_id, initiated_by_user_id (FK), created_at, updated_at
 
