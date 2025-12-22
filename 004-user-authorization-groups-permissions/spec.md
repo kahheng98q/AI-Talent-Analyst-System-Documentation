@@ -129,11 +129,11 @@ As a System, I must ensure that deleted groups don't leave users without necessa
 
 ### Key Entities
 
-- **Group**: Named collection of permissions. Has `name`, `description`, `company_id` (nullable for global groups), `is_system` (prevents deletion).
-- **Permission**: Granular access right. Has `resource`, `action` (e.g., `candidate.view`, `interview.delete`).
-- **UserGroup**: Join table linking Users to Groups (many-to-many).
-- **GroupPermission**: Join table linking Groups to Permissions (many-to-many).
-- **PermissionAuditLog**: Records changes to group assignments and permission grants (timestamp, admin_user_id, action).
+- **auth_group**: Stores authorization group definitions (e.g., Admins, Editors). Columns: `id`, `name`.
+- **auth_permission**: Defines granular actions (add/change/delete/etc.) tied to models. Columns: `id`, `name`, `content_type_id` → `django_content_type.id`, `codename` (maps to `resource.action` like `candidate.view`).
+- **auth_group_permissions**: Junction table linking groups to permissions. Columns: `id`, `group_id` → `auth_group.id`, `permission_id` → `auth_permission.id`.
+- **django_content_type**: Registry of installed models used for permission scoping. Columns: `id`, `app_label`, `model`.
+- **django_admin_log**: Audit log of admin actions (incl. group/permission changes). Columns: `id`, `action_time`, `object_id`, `object_repr`, `action_flag`, `change_message`, `content_type_id` → `django_content_type.id`, `user_id`.
 
 ## Assumptions
 
