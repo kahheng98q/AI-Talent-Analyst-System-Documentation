@@ -36,8 +36,9 @@ As a Super Admin, I want to update system prompts and switch models without code
 
 **Acceptance Scenarios**:
 
-1. **Given** I am in AI Configuration, **When** I edit the "Interviewer Persona" prompt and save, **Then** subsequent AI interactions should use the new persona.
+1. **Given** I am in AI Configuration, **When** I edit the "Interviewer Persona" prompt and save, **Then** subsequent AI interactions should use the new persona, and the old prompt is logged in the database.
 2. **Given** I want to change the underlying model, **When** I switch the dropdown from "GPT-4" to "Claude 3.5", **Then** the system should immediately start using the new model for new requests.
+3. **Given** I edited a prompt previously, **When** I view the Prompt History, **Then** I should see all previous versions with timestamps and editor information, and have the ability to revert to any past version.
 
 ### User Story 3 - Cost Auditing (Priority: P3)
 
@@ -68,7 +69,8 @@ As a Super Admin, I want to identify which companies are spending the most on AI
 - **FR-002**: System MUST allow Dynamic AI Configuration (Prompts, Models) via UI without deployment.
 - **FR-003**: System MUST track and display token usage per company for cost auditing.
 - **FR-004**: System MUST support real-time switching between AI models (e.g., GPT-4, Claude 3.5).
-- **FR-005**: System MUST log all configuration changes with timestamp and admin actor ID.
+- **FR-005**: System MUST log all configuration changes (including old and new values) with timestamp and admin actor ID.
+- **FR-006**: System MUST maintain complete prompt history with ability to revert to previous versions.
 
 ### Key Entities
 
@@ -77,6 +79,7 @@ As a Super Admin, I want to identify which companies are spending the most on AI
 - **DashboardMetric**: Aggregated business and system health metrics.
 - **AIModel**: Available AI models with associated costs and capabilities.
 - **ConfigurationAuditLog**: History of system configuration changes.
+- **PromptHistory**: Versioned history of all prompt edits with old/new values, timestamp, and editor ID.
 
 ### Dependencies
 
@@ -89,6 +92,8 @@ As a Super Admin, I want to identify which companies are spending the most on AI
 - **Token Tracking**: Token usage is logged asynchronously to avoid impacting interview performance.
 - **Dashboard Refresh**: Metrics refresh every 5 minutes; real-time updates not required.
 - **Configuration Persistence**: All system settings stored in database, not config files.
+- **Prompt Versioning**: All prompt edits are stored in PromptHistory with complete old and new values; Super Admins can view full history and revert to any previous version.
+- **Prompt Versioning**: All prompt edits stored with complete old and new values; Super Admins can view history and revert to previous versions.
 
 ## Success Criteria _(mandatory)_
 
