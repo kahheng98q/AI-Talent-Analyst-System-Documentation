@@ -32,14 +32,14 @@ As a Super Admin (or Company Admin), I want to create groups with specific permi
 
 As a Backoffice Super Admin, I want to manage the accounts and permissions of my internal team (e.g., creating Support Agents, Sales staff, Developers) so they can access the admin portal with appropriate restrictions.
 
-**Why this priority**: Necessary to scale the internal team while maintaining security (not everyone should have God Mode).
+**Why this priority**: Necessary to scale the internal team while maintaining security (not everyone should have system-level administrative capabilities).
 
 **Independent Test**: Create a "Support Agent" user with read-only access to customer data but no ability to delete, and verify their restricted view.
 
 **Acceptance Scenarios**:
 
 1. **Given** I am the main Super Admin, **When** I create a new internal user "John Doe" and assign the "Support" role, **Then** John should be able to log in to the Backoffice.
-2. **Given** the "Support" role has `impersonation.allow` but `company.delete` denied, **When** John logs in, **Then** he can impersonate users but the "Delete Company" button is hidden/disabled.
+2. **Given** the "Support" role has `ticket.view` but not `company.delete`, **When** John logs in, **Then** he can view support tickets but the "Delete Company" button is hidden/disabled.
 
 ---
 
@@ -64,9 +64,9 @@ As a Company Admin (or Super Admin), I want to add/remove users from authorizati
 
 ### User Story 4 - Company Data Isolation (Priority: P1)
 
-As a Client User, I should only be able to access groups, permissions, and assignments within my own company, ensuring complete data isolation from other client companies.
+As a Client User, I should only be able to access groups, permissions, and assignments within my own company, ensuring complete data isolation from other client companies. Cross-company access is exclusively reserved for backoffice users.
 
-**Why this priority**: Critical security requirement to prevent data breaches and maintain multi-tenant isolation.
+**Why this priority**: Critical security requirement to prevent data breaches and maintain multi-tenant isolation. Client users must never access other companies' data under any circumstances.
 
 **Independent Test**: Create users from different companies and verify they cannot view or modify each other's groups/assignments.
 
@@ -82,9 +82,9 @@ As a Client User, I should only be able to access groups, permissions, and assig
 
 ### User Story 5 - Cross-Company Access for Backoffice (Priority: P1)
 
-As a Backoffice User (Support/Admin), I want to access data across all client companies when granted cross-company permissions, while respecting company boundaries for standard permissions.
+As a Backoffice User (Support/Admin), I want to access data across all client companies when granted cross-company permissions, while respecting company boundaries for standard permissions. This capability is exclusively available to backoffice users - client users are always restricted to their own company.
 
-**Why this priority**: Essential for internal operations like customer support, analytics, and platform administration.
+**Why this priority**: Essential for internal operations like customer support, analytics, and platform administration. This is a backoffice-only privilege to maintain strict multi-tenant security.
 
 **Independent Test**: Grant a backoffice user cross-company permissions and verify they can access data from all companies. Verify standard permissions remain company-scoped.
 
@@ -147,13 +147,78 @@ As a System, I must ensure that deleted groups don't leave users without necessa
 
 ---
 
+### User Story 9 - Frontend Permission Integration (Priority: P1)
+
+As a Frontend Developer, I want efficient APIs to retrieve user permissions and metadata so that I can render permission-aware UI components (hide/disable buttons, conditional routes, masked fields) without making excessive backend calls.
+
+**Why this priority**: Essential for good UX and security - users should only see actions they can perform, and frontend needs optimized permission checking to avoid performance issues.
+
+**Independent Test**: Load the application as a restricted user and verify that unauthorized UI elements (buttons, menu items, routes) are hidden/disabled based on their permissions. Verify permission data is fetched efficiently (single API call on login).
+
+**Acceptance Scenarios**:
+
+1. **Given** I am a user with limited permissions, **When** I log in to the application, **Then** the system should return all my effective permissions in a single API call (e.g., `GET /api/v1/users/me/permissions`).
+2. **Given** I need to check multiple permissions for a page, **When** I call the bulk check API (e.g., `POST /api/v1/permissions/check` with `["candidate.view", "interview.view"]`), **Then** I should receive a response indicating which permissions I have in a single request.
+3. **Given** I lack `candidate.delete` permission, **When** I view a candidate profile page, **Then** the "Delete" button should be hidden or disabled in the UI.
+4. **Given** I have `candidate.view` but not `salary.view`, **When** I view a candidate profile, **Then** the salary field should be masked or hidden.
+5. **Given** I lack `admin.access` permission, **When** I attempt to navigate to `/admin` route, **Then** the frontend should redirect me to an unauthorized page before making API calls.
+6. **Given** the frontend has cached my permissions, **When** an admin adds me to a new group, **Then** my permissions should refresh on next page load or via WebSocket/polling notification.
+7. **Given** I am a frontend component, **When** I need to check if a user has a specific permission, **Then** I should use a permission guard/directive (e.g., `<Button permission="candidate.create">`) that reads from cached permission data.
+8. **Given** I am building a dynamic admin UI, **When** I fetch permission metadata via `GET /api/v1/permissions/metadata`, **Then** I should receive permission descriptions, UI labels, and grouping information for all available permissions.
+9. **Given** I am a backoffice user with `is_cross_company=True` permissions, **When** I view the permissions response, **Then** cross-company permissions should be clearly flagged so the UI can indicate their scope.
+
+---
+
+### User Story 10 - UI Route Permission Mapping (Priority: P2)
+
+As a System Administrator, I want to centrally define which permissions are required for each UI route/page so that frontend developers can fetch permission requirements declaratively and users are prevented from accessing pages they lack permissions for.
+
+**Why this priority**: Improves maintainability by centralizing permission requirements instead of hardcoding them in frontend code. Enables dynamic access control without frontend deployments.
+
+**Independent Test**: Create a UI route mapping with multiple required permissions, load the page as a user with partial permissions, and verify access is denied. Update the route's permission requirements without code changes and verify new rules are enforced.
+
+**Acceptance Scenarios**:
+
+1. **Given** I am a System Admin, **When** I create a UI route mapping for `/candidates/:id` requiring `["candidate.view", "interview.view"]` with `permission_mode='ALL'`, **Then** the route mapping should be saved and accessible via API.
+2. **Given** a route `/candidates/:id` requires `["candidate.view", "interview.view"]` with mode `ALL`, **When** a user with only `candidate.view` accesses the route, **Then** the frontend should block access and show an unauthorized message.
+3. **Given** a route `/admin/dashboard` requires `["admin.access", "analytics.view"]` with mode `ANY`, **When** a user has `analytics.view` but not `admin.access`, **Then** the user should be granted access (needs at least one permission).
+4. **Given** I am a frontend developer, **When** I fetch `GET /api/v1/ui-routes/permissions`, **Then** I should receive all route permission mappings to cache locally for route guard implementation.
+5. **Given** a route has `permission_mode='ALL'`, **When** the frontend uses the bulk check API to verify permissions, **Then** it should deny access only if the user lacks any required permission.
+6. **Given** I update a route's required permissions from `["candidate.view"]` to `["candidate.view", "candidate.edit"]`, **When** users reload the application, **Then** the new permission requirements should be enforced immediately without frontend code changes.
+7. **Given** a route is marked as `ui_component_type='modal'`, **When** I view route metadata, **Then** I should see this is a component-level permission check (not full page).
+8. **Given** multiple routes share the same permission requirements, **When** I query route permissions, **Then** I should be able to filter by permission to see which routes require specific access.
+
+---
+
+### User Story 11 - Manage Temporary Permission Assignments (Priority: P2)
+
+As an Admin, I want to assign users to groups with expiration dates so that I can grant temporary access (e.g., contractors, interns) that automatically revokes after a set period.
+
+**Why this priority**: Important for security and compliance - temporary staff should automatically lose access when their contract ends without manual intervention.
+
+**Independent Test**: Assign a user to a group with an expiration date, wait for expiration (or simulate time passing), and verify the user loses those permissions automatically.
+
+**Acceptance Scenarios**:
+
+1. **Given** I am adding user "Jane" to the "Contractors" group, **When** I set an expiration date of "2026-03-31", **Then** the assignment should be saved with `expires_at='2026-03-31 23:59:59'`.
+2. **Given** a user has a group assignment that expires today, **When** the system's daily cleanup job runs, **Then** the assignment should be marked as `is_active=False` and the user should lose those permissions.
+3. **Given** a user has a group assignment expiring in 7 days, **When** I view the group membership list, **Then** I should see a warning indicator "Expires in 7 days".
+4. **Given** a user's group assignment has expired, **When** I view their user details, **Then** the expired assignment should be visible in history but marked as "Expired" with the expiration date.
+5. **Given** an expired assignment exists, **When** I want to renew the user's access, **Then** I should be able to create a new assignment or update the existing one with a new expiration date.
+
+---
+
 ### Edge Cases
 
-- **Circular Dependencies**: What happens if permissions reference each other?
-- **Permission Conflicts**: If a user has `candidate.read` from one group but `candidate.deny` from another, which takes precedence? (Default: Allow-first/union strategy)
-- **Super Admin Bypass**: Should Super Admins bypass all permission checks, or should they also be subject to groups?
-- **Deletion of Critical Groups**: What happens if someone tries to delete the "Company Admin" group that all admins belong to?
-- **Empty Groups**: Should groups with no users be automatically deleted, or should they persist?
+- **Circular Dependencies**: What happens if permissions reference each other? → Not applicable; permissions are simple `resource.action` strings with no inter-permission dependencies.
+- **Permission Conflicts**: If a user has `candidate.read` from one group but `candidate.deny` from another, which takes precedence? → Allow-first/union strategy applies; no deny rules exist in the system.
+- **Super Admin Bypass**: Should Super Admins bypass all permission checks, or should they also be subject to groups? → Super Admins belong to the "Super Admin" system group with all permissions; they follow the same permission model.
+- **Deletion of Critical Groups**: What happens if someone tries to delete the "Company Admin" group that all admins belong to? → System prevents deletion of any group where `is_system_critical=True`.
+- **Empty Groups**: Should groups with no users be automatically deleted, or should they persist? → Groups persist even with zero users; admins must explicitly delete unused groups.
+- **System Group Modifications**: Can system groups be modified? → Yes, permissions can be added/removed, but the group cannot be deleted, renamed, or have `is_system_critical` flag changed.
+- **Expired Assignments**: What happens if a user is actively using the system when their assignment expires? → Permissions are checked per-request; expired assignments take effect on the next permission check (next page load or API call).
+- **Timezone Handling**: How are expiration dates handled across timezones? → All expiration dates stored in UTC; evaluated at end-of-day UTC (23:59:59 UTC).
+- **Concurrent Permission Updates**: What if two admins modify the same group simultaneously? → Last-write-wins at the database level; audit logs capture both changes with timestamps.
 
 ## Requirements _(mandatory)_
 
@@ -169,14 +234,28 @@ As a System, I must ensure that deleted groups don't leave users without necessa
 - **FR-008**: System MUST support defining Custom Permissions dynamically.
 - **FR-009**: System MUST audit permission changes (who added/removed which permission, when).
 - **FR-010**: System MUST prevent deletion of Groups that are marked as "System Critical" (e.g., Company Admin, Super Admin).
+- **FR-011**: System MUST provide a bulk permission retrieval API endpoint (e.g., `GET /api/v1/users/me/permissions`) that returns all effective permissions, groups, and cross-company flags in a single response.
+- **FR-012**: System MUST provide a permission metadata API endpoint that returns permission descriptions, UI labels, resource categorization, and user type applicability for building dynamic UIs.
+- **FR-013**: Frontend components MUST enforce permission-based UI rendering (hide/disable elements for unauthorized actions) as an optimistic check, while backend MUST remain the authoritative enforcer.
+- **FR-014**: System MUST support permission caching in the frontend with a refresh mechanism when group assignments change (e.g., on login, after group modification, or via real-time notification).
+- **FR-015**: System MUST include permission scope indicators (company-scoped vs cross-company) in API responses to help frontend display appropriate context.
+- **FR-016**: System MUST provide a bulk permission check API endpoint (e.g., `POST /api/v1/permissions/check`) that accepts multiple permissions and returns a boolean result for each permission in a single request.
+- **FR-017**: System MUST support UI Route Permission Mapping that defines which permissions are required for each frontend route/page with configurable permission modes (ALL or ANY).
+- **FR-018**: System MUST provide an API to retrieve all UI route permission mappings (e.g., `GET /api/v1/ui-routes/permissions`) for frontend route guard initialization.
+- **FR-019**: System MUST retain audit logs for all permission-related changes (group creation/deletion, permission assignments, user assignments) for at least 2 years for compliance and security auditing.
+- **FR-020**: System MUST restrict audit log access to users with `audit.view` permission, ensuring only authorized personnel can review permission change history.
+- **FR-021**: System MUST automatically deactivate user group assignments when `expires_at` date is reached, removing those permissions from the user's effective permission set.
+- **FR-022**: System MUST prevent modification of system-critical groups beyond permission assignments (name, `is_system_critical` flag, and deletion are prohibited).
+- **FR-023**: System MUST send notification emails to users 7 days before their group assignment expires (if `expires_at` is set) to provide advance warning.
+- **FR-024**: System MUST validate that `is_cross_company=True` permissions are only effective for backoffice users; client users must be denied even if assigned such permissions.
 
 ### Key Entities
 
-- **auth_group**: Stores authorization group definitions (e.g., Admins, Editors). Columns: `id`, `name`.
-- **auth_permission**: Defines granular actions (add/change/delete/etc.) tied to models. Columns: `id`, `name`, `content_type_id` → `django_content_type.id`, `codename` (maps to `resource.action` like `candidate.view`).
-- **auth_group_permissions**: Junction table linking groups to permissions. Columns: `id`, `group_id` → `auth_group.id`, `permission_id` → `auth_permission.id`.
-- **django_content_type**: Registry of installed models used for permission scoping. Columns: `id`, `app_label`, `model`.
-- **django_admin_log**: Audit log of admin actions (incl. group/permission changes). Columns: `id`, `action_time`, `object_id`, `object_repr`, `action_flag`, `change_message`, `content_type_id` → `django_content_type.id`, `user_id`.
+- **AuthGroup**: Custom authorization group model. Attributes: `id`, `name`, `description`, `company_id` (nullable for global groups), `applicable_user_type` (enum: `client`, `backoffice`, `both`), `is_system_critical` (boolean), `created_by`, `created_at`, `updated_at`.
+- **AuthPermission**: Custom permission model using `resource.action` format. Attributes: `id`, `resource` (e.g., "candidate"), `action` (e.g., "view"), `description`, `applicable_user_type` (enum: `client`, `backoffice`, `both`), `is_cross_company` (boolean), `created_at`.
+- **UserGroupAssignment**: Junction table linking users to groups with audit trail. Attributes: `id`, `user_id`, `group_id`, `assigned_by`, `assigned_at`, `expires_at` (nullable), `is_active` (boolean), `notes`.
+- **UIRoutePermission**: Maps frontend routes to required permissions. Attributes: `id`, `route` (e.g., `/candidates/:id`), `required_permissions` (JSON array of permission strings), `permission_mode` (enum: `ALL`, `ANY`), `description`, `ui_component_type` (enum: `page`, `modal`, `tab`, `section`), `is_active` (boolean), `created_at`, `updated_at`, `created_by`.
+- **PermissionAuditLog**: Audit trail for all permission-related changes. Attributes: `id`, `action_type` (enum: `group_created`, `permission_assigned`, `user_assigned`, etc.), `actor_id`, `target_user_id` (nullable), `target_group_id` (nullable), `old_value`, `new_value`, `timestamp`, `ip_address`, `user_agent`.
 
 ### Implementation Notes (Current Build)
 
@@ -213,19 +292,22 @@ As a System, I must ensure that deleted groups don't leave users without necessa
 
 - `AuthPermission.is_cross_company` flag enables backoffice users to access resources across all companies.
 - When `True`, backoffice users with this permission bypass company filtering.
+- **RESTRICTION**: This flag only applies to backoffice users. Client users always have company-scoped access regardless of this flag.
 - Use case: Support agents viewing tickets across all client companies, analytics for all customers.
 
 **Security Benefits:**
 
-- Prevents client users from accessing other companies' data
+- Prevents client users from accessing other companies' data (strict isolation enforced)
 - Prevents user type mismatches (e.g., client users in backoffice-only groups)
-- Enables controlled cross-company access for internal staff
+- Enables controlled cross-company access exclusively for backoffice staff
+- Client users are always company-scoped regardless of permission flags
 - Maintains additive permission model while enforcing isolation boundaries
 
 ## Assumptions
 
 - **Additive Permissions**: Users accumulate permissions from all their groups (no deny rules by default).
-- **Company Isolation**: Company Admins can only create/manage groups within their own company; Super Admins can manage global groups.
+- **Company Isolation**: Company Admins can only create/manage groups within their own company; Super Admins can manage global groups. Client users are strictly isolated to their own company data.
+- **Cross-Company Access**: Only backoffice users can be granted cross-company permissions via `is_cross_company=True` flag. Client users cannot access other companies' data under any circumstances.
 - **System Groups**: Some groups (e.g., "Super Admin", "Company Admin") are created by default and cannot be deleted.
 - **Permission Format**: Permissions follow the format `resource.action` (e.g., `candidate.view`, `job.create`, `report.export`).
 
@@ -238,3 +320,225 @@ As a System, I must ensure that deleted groups don't leave users without necessa
 - **SC-003**: Effective permissions for a user are calculated in < 100ms.
 - **SC-004**: Audit logs capture 100% of permission changes with accurate timestamps and actor identification.
 - **SC-005**: System supports at least 50 custom groups per company without performance degradation.
+- **SC-006**: Bulk permission API responds with complete user permissions in < 200ms (P95).
+- **SC-007**: Frontend permission checks (button visibility, route guards) execute in < 10ms using cached permission data.
+- **SC-008**: 100% of permission-protected UI elements (buttons, menus, routes, fields) correctly reflect user's effective permissions without requiring page refresh after login.
+- **SC-009**: UI route permission mappings can be updated and take effect within 60 seconds without requiring frontend redeployment.
+- **SC-010**: Permission checks for users with 10+ groups complete in < 50ms (P95), ensuring performance scales with complex permission hierarchies.
+- **SC-011**: 100% of permission changes (assignments, removals, group modifications) are logged in audit trail with actor identification, timestamp, and old/new values.
+- **SC-012**: Expired group assignments are automatically deactivated within 1 hour of expiration time.
+- **SC-013**: System successfully prevents 100% of attempts to modify system-critical groups beyond permission changes.
+
+---
+
+## Appendix A: Cross-Feature Permission Catalog
+
+This section documents the specific permissions required across all features in the AI-Talent-Analyst system. These permissions follow the `resource.action` format and should be seeded during system initialization.
+
+### Feature 001: AI-HR Interview System
+
+**Interview Management:**
+
+- `interview.create` - Create new AI-led interviews
+- `interview.view` - View interview details and responses
+- `interview.edit` - Modify interview settings
+- `interview.delete` - Remove interviews
+- `interview.start` - Start/conduct an interview (for candidates)
+
+**Candidate Management:**
+
+- `candidate.create` - Add new candidates to the system
+- `candidate.view` - View candidate profiles and data
+- `candidate.edit` - Update candidate information
+- `candidate.delete` - Remove candidates
+- `candidate.invite` - Send interview invitations
+
+**Job Management:**
+
+- `job.create` - Create new job positions
+- `job.view` - View job descriptions and details
+- `job.edit` - Modify job postings
+- `job.delete` - Remove job postings
+- `job.publish` - Publish jobs for candidate applications
+
+**Resume & Analysis:**
+
+- `resume.view` - View uploaded resumes
+- `resume.download` - Download resume files
+- `resume.analyze` - Trigger AI resume analysis
+
+**Reporting:**
+
+- `report.view` - View interview analytics and reports
+- `report.export` - Export reports to PDF/CSV
+- `analytics.view` - Access analytics dashboards
+
+**Sensitive Data:**
+
+- `salary.view` - View candidate salary information (may be masked for some roles)
+
+### Feature 002/007: Admin Portals (SaaS & Company Self-Service)
+
+**Company Management (Super Admin):**
+
+- `company.create` - Onboard new client companies
+- `company.view` - View company details
+- `company.edit` - Update company information
+- `company.delete` - Remove companies (soft delete)
+- `company.suspend` - Suspend company accounts
+
+**User Management:**
+
+- `user.create` - Create new user accounts
+- `user.view` - View user profiles
+- `user.edit` - Update user information
+- `user.delete` - Remove users (soft delete)
+- `user.invite` - Send user invitation emails
+- `user.activate` - Activate/reactivate user accounts
+- `user.deactivate` - Deactivate user accounts
+
+**Settings:**
+
+- `settings.view` - View company/system settings
+- `settings.edit` - Modify settings
+
+### Feature 003: Interview Status Tracking
+
+**Status Management:**
+
+- `candidate.status.view` - View candidate status in pipeline
+- `candidate.status.update` - Change candidate status
+- `status.history.view` - View status change audit trail
+
+### Feature 004: Authorization (This Feature)
+
+**Group Management:**
+
+- `group.create` - Create authorization groups
+- `group.view` - View group details
+- `group.edit` - Modify groups and their permissions
+- `group.delete` - Remove groups
+
+**Permission Management:**
+
+- `permission.create` - Define new permissions
+- `permission.view` - View permission definitions
+- `permission.edit` - Modify permission metadata
+- `permission.delete` - Remove custom permissions
+- `permission.assign` - Assign permissions to groups
+
+**User Assignment:**
+
+- `user.group.assign` - Add users to groups
+- `user.group.remove` - Remove users from groups
+- `user.permissions.view` - View user's effective permissions
+
+**Audit:**
+
+- `audit.view` - Access audit logs for permission changes
+- `audit.export` - Export audit logs
+
+### Feature 005: Credit & Subscription Management
+
+**Billing:**
+
+- `billing.view` - View billing history and invoices
+- `billing.export` - Download invoices and receipts
+
+**Subscription:**
+
+- `subscription.view` - View subscription plan details
+- `subscription.manage` - Upgrade/downgrade plans
+- `subscription.cancel` - Cancel subscriptions
+
+**Payment:**
+
+- `payment.view` - View payment methods
+- `payment.manage` - Add/remove payment methods
+- `payment.process` - Process manual payments (backoffice)
+
+**Credits:**
+
+- `credits.view` - View credit balance and usage
+- `credits.topup` - Add credits to account
+- `credits.adjust` - Manually adjust credits (backoffice)
+
+### Feature 006: System Management
+
+**System Configuration:**
+
+- `system.config.view` - View system-wide settings
+- `system.config.edit` - Modify system settings
+
+**AI Configuration:**
+
+- `ai.model.switch` - Change AI models
+- `ai.prompt.edit` - Modify system prompts
+- `ai.prompt.history` - View prompt version history
+
+**Monitoring:**
+
+- `system.dashboard.view` - Access system health dashboard
+- `system.metrics.view` - View system metrics
+- `system.logs.view` - Access system logs
+
+**Token Management:**
+
+- `token.usage.view` - View token consumption analytics
+- `token.audit.view` - Access detailed token usage logs
+
+### Feature 008: Limit Enforcement
+
+**Limits:**
+
+- `limits.view` - View plan limits and current usage
+- `limits.override` - Override limits for specific companies (backoffice)
+
+### Cross-Company Permissions (Backoffice Only)
+
+The following permissions should be marked with `is_cross_company=True` for backoffice staff:
+
+- `ticket.view` (cross-company) - Support agents viewing tickets across all companies
+- `analytics.export` (cross-company) - Generate reports across all companies
+- `company.view` (cross-company) - View all company details
+- `user.view` (cross-company) - View users across companies
+- `billing.view` (cross-company) - View billing across all companies
+- `token.usage.view` (cross-company) - View token usage across platform
+- `audit.view` (cross-company) - View audit logs across all companies
+
+### System Groups & Default Permissions
+
+**Super Admin Group** (`is_system_critical=True`, `company=None`, `applicable_user_type='backoffice'`):\
+
+- All permissions with `is_cross_company=True`
+
+**Company Admin Group** (`is_system_critical=True`, `company=[specific]`, `applicable_user_type='client'`):\
+
+- All company-scoped permissions within their company
+- Cannot access other companies' data
+
+**Support Agent Group** (`applicable_user_type='backoffice'`):\
+
+- Read-only cross-company permissions
+- `ticket.view` (cross-company), `company.view` (cross-company), `user.view` (cross-company)
+- No delete or edit permissions
+
+**Hiring Manager Group** (`applicable_user_type='client'`):\
+
+- `job.create`, `job.edit`, `job.view`, `job.delete`
+- `candidate.view`, `candidate.edit`, `candidate.invite`
+- `interview.view`, `report.view`, `analytics.view`
+- `salary.view`
+
+**Interviewer Group** (`applicable_user_type='client'`):\
+
+- `candidate.view` (without `salary.view`)
+- `interview.view`, `interview.create`
+- `report.view`
+
+**Recruiter Group** (`applicable_user_type='client'`):\
+
+- `candidate.create`, `candidate.view`, `candidate.edit`, `candidate.invite`
+- `job.view`
+- `interview.view`
+- No `salary.view`
