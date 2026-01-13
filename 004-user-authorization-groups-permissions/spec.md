@@ -190,7 +190,30 @@ As a System Administrator, I want to centrally define which permissions are requ
 
 ---
 
-### User Story 11 - Manage Temporary Permission Assignments (Priority: P2)
+### User Story 11 - Assign Permissions to Backoffice and Client Users Based on UI Route Mapping (Priority: P2)
+
+As a System Administrator or Company Admin, I want to assign specific permissions to Backoffice and Client users based on the defined UI routes so that access control is tailored to user roles, ensuring that users can only access the functionalities relevant to their responsibilities.
+
+**Why this priority**: This feature is crucial for maintaining security and operational efficiency by ensuring that users have access only to the parts of the system they need, reducing the risk of unauthorized actions and streamlining permission management.
+
+**Independent Test**: Assign permissions to a Backoffice user and a Client user for specific UI routes, attempt to access those routes as different users, and verify that access is granted or denied based on the assigned permissions and route requirements.
+
+**Acceptance Scenarios**:
+
+1. **Given** I am a System Administrator, **When** I assign the permissions `["admin.access"]` to a Backoffice user for the route `/admin/dashboard`, **Then** the user should be able to access the dashboard when the route permission mapping requires `["admin.access"]`.
+2. **Given** I have assigned the permissions `["candidate.view", "interview.view"]` to a Client user for the route `/candidates/:id`, **When** the Client user accesses the route with `permission_mode='ALL'`, **Then** they should be able to view the candidate details since they have both required permissions.
+3. **Given** a Backoffice user has been assigned `["interview.view"]` for accessing the route `/interviews`, **When** they attempt to access the route requiring `["interview.view"]`, **Then** they should be granted access.
+4. **Given** a Client user has only been assigned `["candidate.view"]` and the route `/admin/dashboard` requires `["admin.access"]`, **When** they attempt to access the route, **Then** they should be blocked and shown an unauthorized message.
+5. **Given** I am a Company Admin, **When** I update the permissions for a Client user from `["candidate.view"]` to `["candidate.view", "interview.create"]`, **Then** the user should have immediate access to routes requiring either permission upon reloading the application.
+6. **Given** a route is marked as `permission_mode='ANY'` and requires `["admin.access", "analytics.view"]`, **When** a Backoffice user has only `["analytics.view"]`, **Then** the user should be granted access to the route since they have at least one required permission.
+7. **Given** I am assigning a Backoffice user cross-company permissions (e.g., `["ticket.view"]` with `is_cross_company=True`), **When** the user accesses routes requiring these permissions, **Then** they should be able to access data across all client companies as defined by the UI route mapping.
+8. **Given** a Client user is assigned the same cross-company permission flag, **When** they access the system, **Then** the cross-company permission should be ignored or denied to maintain strict company isolation for client users.
+9. **Given** I am a frontend developer building a dynamic permissions UI, **When** I fetch the UI route permission metadata via `GET /api/v1/ui-routes/permissions`, **Then** I should receive all routes with their required permissions, permission modes, and applicable user types to render appropriate access controls.
+10. **Given** a route's required permissions are updated from `["candidate.view"]` to `["candidate.view", "candidate.edit"]`, **When** Backoffice users reload the application, **Then** the new permission requirements should be enforced without backend redeployment, and users lacking the new permissions should lose access.
+
+---
+
+### User Story 12 - Manage Temporary Permission Assignments (Priority: P2)
 
 As an Admin, I want to assign users to groups with expiration dates so that I can grant temporary access (e.g., contractors, interns) that automatically revokes after a set period.
 
