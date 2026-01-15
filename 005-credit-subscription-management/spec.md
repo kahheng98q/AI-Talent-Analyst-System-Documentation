@@ -3,47 +3,49 @@
 **Feature Branch**: `005-credit-subscription-management`  
 **Created**: December 13, 2025  
 **Status**: Draft  
-**Input**: User description: "Client-Side Credit Logic - subscription plan viewing, token usage tracking/visualization, billing history, payment methods, usage notifications, self-service subscription management"
+**Input**: User description: "Tiered subscription packages (Gold Fish RM3600, Dolphin RM7200, Whale RM12000 per year) with per-interview billing. Individual interview purchase at RM15. Job Description creation is free. Subscription management, billing history, payment notifications, usage tracking."
 
 ## User Scenarios & Testing _(mandatory)_
 
-### User Story 1 - View Subscription Status & Account Balance (Priority: P1)
+### User Story 1 - View Subscription Status & Interview Allocation (Priority: P1)
 
-Company Admins need to monitor their subscription status and prepaid account balance to ensure uninterrupted service and manage costs.
+Company Admins need to monitor their subscription tier, annual interview allocation, interviews used this year, account balance, and reserved quota to manage their recruitment capacity.
 
-**Why this priority**: Core visibility into subscription status and account balance is fundamental for any pay-per-use SaaS billing system. Without this, users cannot manage their spending or prevent service interruptions.
+**Why this priority**: Core visibility into subscription status, interview quota, and account balance is fundamental for planning recruitment activities. Without this, users cannot track their usage or make timely upgrade decisions.
 
-**Independent Test**: Can be fully tested by logging in as Company Admin, navigating to subscription dashboard, and verifying that subscription status, account balance (monetary), token usage rate, and balance depletion rate are displayed accurately. Delivers immediate value by providing transparency into account state.
+**Independent Test**: Can be fully tested by logging in as Company Admin, navigating to subscription dashboard, and verifying that subscription tier, annual interview allocation, interviews used this year, remaining interviews, reserved quota (pending invitations), available quota, and account balance are displayed accurately. Delivers immediate value by providing transparency into recruitment capacity and financial status.
 
 **Acceptance Scenarios**:
 
-1. **Given** I am logged in as a Company Admin with an active subscription (subscribed on Dec 1, 2025) and $500 prepaid balance, **When** I navigate to the subscription dashboard, **Then** I see subscription status "Active", subscription start date "Dec 1, 2025", current balance "$500.00", token pricing rate (e.g., "$25 per 1M tokens"), and total tokens consumed to date
+1. **Given** I am logged in as a Company Admin with an active Gold Fish subscription (subscribed on Dec 1, 2025), account balance RM500, and 5 pending invitations, **When** I navigate to the subscription dashboard, **Then** I see subscription status "Active", subscription tier "Gold Fish (RM3600/year)", annual allocation "300 interviews", interviews used "12", remaining "288", reserved quota "5" (pending invitations), available quota "283", account balance "RM500", and subscription anniversary date "Dec 1, 2026"
 
-2. **Given** I am logged in as a Company Admin and my company has $500 balance with $300 already spent on tokens in December 2025, **When** I view the subscription dashboard on December 13, 2025, **Then** I see "Current Balance: $200.00" and "Total Usage This Month: $300.00 (12M tokens)"
+2. **Given** I am logged in as a Company Admin with Dolphin subscription and have used 650 of 800 interviews this year, with account balance RM1200 and no reserved quota, **When** I view the subscription dashboard on December 13, 2025, **Then** I see "Remaining: 150 interviews", "Usage Rate: 81.25% of annual allocation", "Reserved Quota: 0", "Available Quota: 150", "Account Balance: RM1200"
 
-3. **Given** I am logged in as a Company Admin with $50 remaining balance and daily usage averaging $20/day, **When** I view the subscription dashboard, **Then** I see a warning banner "⚠️ Low Balance: $50 remaining. At your current usage rate, balance will be depleted in approximately 2.5 days. [Top Up Now]"
+3. **Given** I am logged in as a Company Admin with Gold Fish subscription and have used 280 of 300 interviews (93% used), **When** I view the subscription dashboard, **Then** I see a warning banner "⚠️ Running Low: 20 interviews remaining. Upgrade to continue interviewing after quota is exhausted. [Upgrade Now]"
 
-4. **Given** my account balance has reached $0, **When** I navigate to the subscription dashboard, **Then** I see status banner "❌ Service Suspended - Zero Balance", balance shown as "$0.00", and a prominent call-to-action "Add Funds to Resume Service" with [Top Up] button
+4. **Given** my subscription interview quota has been fully used (300/300 interviews for Gold Fish) but I have RM500 available balance, **When** I navigate to the subscription dashboard, **Then** I see status banner "❌ Interview Quota Exhausted", "0 remaining interviews", account balance "RM500 available", and a prominent call-to-action "Upgrade your plan or purchase individual interviews at RM15 each" with [View Plans] button
+
+5. **Given** I have available quota (200 remaining interviews) but only RM30 available balance (insufficient for 1 interview estimated at RM50), **When** I navigate to the subscription dashboard, **Then** I see warning banner "⚠️ Low Balance: RM30 available (insufficient for new interviews). Top up to continue interviewing. [Top Up Now]" alongside the quota status "200 interviews remaining"
 
 ---
 
-### User Story 2 - View Token Usage History & Analytics (Priority: P1)
+### User Story 2 - View Interview Usage History & Analytics (Priority: P1)
 
-Company Admins need to analyze token consumption patterns over time to optimize usage and forecast future needs.
+Company Admins need to analyze interview consumption patterns over time to track hiring progress and forecast remaining quota.
 
-**Why this priority**: Usage analytics are essential for cost management and planning. Without historical data visualization, admins cannot identify trends, anomalies, or optimize their token consumption.
+**Why this priority**: Usage analytics are essential for recruitment planning. Without historical data visualization, admins cannot identify hiring trends or make timely upgrade decisions.
 
-**Independent Test**: Can be fully tested by creating sample token usage records across different dates and purposes, then verifying that the dashboard displays accurate line graphs (daily/monthly views), date range filtering works, and pie charts show correct usage breakdowns by purpose. Delivers standalone value by enabling data-driven usage decisions.
+**Independent Test**: Can be fully tested by creating sample interview records across different dates and statuses, then verifying that the dashboard displays accurate line graphs (daily/monthly views), date range filtering works, and pie charts show correct usage breakdowns by interview status (completed, cancelled, pending). Delivers standalone value by enabling data-driven hiring decisions.
 
 **Acceptance Scenarios**:
 
-1. **Given** my company has token usage data for the past 3 months, **When** I view the token usage chart in "Daily" mode with date range "Dec 1-13, 2025", **Then** I see a line graph with 13 data points showing daily token consumption, with dates on X-axis and token count on Y-axis
+1. **Given** my company has interview records for the past 3 months, **When** I view the interview usage chart in "Daily" mode with date range "Dec 1-13, 2025", **Then** I see a line graph with 13 data points showing daily interviews completed, with dates on X-axis and interview count on Y-axis
 
-2. **Given** my company has token usage data, **When** I switch to "Monthly" view with date range "Oct 2025 - Dec 2025", **Then** I see a line graph with 3 data points showing aggregate monthly consumption
+2. **Given** my company has interview data, **When** I switch to "Monthly" view with date range "Oct 2025 - Dec 2025", **Then** I see a line graph with 3 data points showing aggregate monthly interviews completed
 
-3. **Given** my company used tokens for: 10M for "Interview - Question Generation", 5M for "Interview - Response Scoring", 3M for "Job Description Analysis", **When** I view the usage breakdown pie chart for December 2025, **Then** I see 3 segments: "Interview - Question Generation" (55.6%), "Interview - Response Scoring" (27.8%), "Job Description Analysis" (16.7%)
+3. **Given** my company completed: 50 interviews in "Completed" status, 8 in "Pending" status, 2 in "Cancelled" status in December 2025, **When** I view the usage breakdown pie chart for December 2025, **Then** I see 3 segments: "Completed" (86.2%), "Pending" (13.8%), "Cancelled" (3.4%)
 
-4. **Given** I have token usage data, **When** I view the combined dual-axis chart, **Then** I see a line graph for usage over time overlaid with a bar chart showing usage by purpose for the selected period
+4. **Given** I have interview usage data, **When** I view the combined dual-axis chart, **Then** I see a line graph for interviews over time overlaid with a bar chart showing monthly breakdown for the selected period
 
 5. **Given** I select an invalid date range (end date before start date), **When** I apply the filter, **Then** I see an error message "Invalid date range: End date must be after start date" and the chart retains the previous valid filter
 
@@ -55,199 +57,278 @@ Company Admins need to access past invoices, receipts, and payment history for a
 
 **Why this priority**: Billing transparency and invoice access are mandatory for any B2B SaaS product. Finance departments require downloadable invoices for bookkeeping and tax compliance.
 
-**Independent Test**: Can be fully tested by creating sample billing records with various statuses and dates, then verifying that the billing history table displays correctly, filters work (date range, payment status), and PDF downloads generate proper invoices. Delivers immediate value for financial record-keeping.
+**Independent Test**: Can be fully tested by creating sample billing records with various transaction types and dates, then verifying that the billing history table displays correctly, filters work (date range, transaction type), and PDF downloads generate proper invoices. Delivers immediate value for financial record-keeping.
 
 **Acceptance Scenarios**:
 
-1. **Given** my company has 6 months of billing history, **When** I navigate to the billing history page, **Then** I see a table with columns: Invoice Number, Date, Description, Amount, Status (Paid/Unpaid), and Actions (View/Download PDF)
+1. **Given** my company has 6 months of billing history, **When** I navigate to the billing history page, **Then** I see a table with columns: Invoice Number, Date, Description, Amount, Transaction Type (Subscription/Individual Purchase/Top-up), and Actions (View/Download PDF)
 
-2. **Given** I have billing records from Jan 2025 to Dec 2025, **When** I filter by date range "Oct 2025 - Dec 2025" and status "Paid", **Then** I see only invoices from October, November, and December 2025 with status "Paid"
+2. **Given** I have billing records from Jan 2025 to Dec 2025, **When** I filter by date range "Oct 2025 - Dec 2025" and transaction type "Subscription", **Then** I see only subscription invoices from October, November, and December 2025
 
-3. **Given** I select an invoice from the billing history table, **When** I click "Download PDF", **Then** a PDF invoice is generated and downloaded containing: company name, invoice number, date, itemized charges (subscription fee, extra usage charges if any), total amount, payment method, and payment status
+3. **Given** I select an invoice from the billing history table, **When** I click "Download PDF", **Then** a PDF invoice is generated and downloaded containing: company name, invoice number, date, itemized charges (subscription fee, individual interview purchases, or balance top-up), total amount, payment method used, and payment completion timestamp
 
-4. **Given** I have an unpaid invoice from November 2025, **When** I view the billing history, **Then** the unpaid invoice row is highlighted with a badge "Unpaid" and shows a "Pay Now" action button
+4. **Given** I have made a balance top-up via bank transfer for RM500 on November 15, 2025, **When** I view the billing history after the finance team processes my payment, **Then** I see an invoice record with transaction type "Balance Top-up", date "Nov 15, 2025", amount "RM500", and I can download a receipt showing the top-up confirmation and new account balance
 
 5. **Given** I have no billing history (new account), **When** I navigate to the billing history page, **Then** I see an empty state message "No billing history available" with information about when the first invoice will be generated
 
 ---
 
-### User Story 4 - Receive Low Balance Notifications (Priority: P2)
+### User Story 4 - Receive Interview Quota Alerts (Priority: P2)
 
-Company Admins need automated alerts when token consumption reaches critical thresholds (80%, 100%) to take timely action.
+Company Admins need automated alerts when interview usage reaches critical thresholds (80%, 100%) to plan upgrade or purchase decisions.
 
-**Why this priority**: Automated notifications prevent service disruptions and unexpected charges. While not MVP-critical (users can manually check dashboard), it significantly improves user experience and reduces support burden.
+**Why this priority**: Automated notifications prevent recruitment disruptions. While not MVP-critical (users can manually check dashboard), it significantly improves user experience and reduces support burden.
 
-**Independent Test**: Can be fully tested by simulating token usage that crosses 80% and 100% thresholds, then verifying that email notifications are sent and in-app banners/modals appear with correct messaging. Delivers value by enabling proactive account management.
+**Independent Test**: Can be fully tested by simulating interview usage that crosses 80% and 100% of annual quota thresholds AND balance that drops below RM50 threshold, then verifying that email notifications are sent and in-app banners/modals appear with correct messaging. Delivers value by enabling proactive quota and balance management.
 
 **Acceptance Scenarios**:
 
-1. **Given** I am subscribed to a plan with 20M tokens/month and have used exactly 16M tokens (80%), **When** the system calculates remaining credits, **Then** I receive an email notification with subject "Token Usage Alert: 80% Limit Reached" and body detailing current usage, remaining credits, and link to upgrade plan
+1. **Given** I am subscribed to Gold Fish plan (300 interviews/year) and have used exactly 240 interviews (80%), **When** the system calculates remaining quota, **Then** I receive an email notification with subject "Interview Quota Alert: 80% Used" and body detailing current usage, remaining interviews, and link to upgrade plan
 
-2. **Given** I am subscribed to a plan with 20M tokens/month and have used exactly 16M tokens (80%), **When** I next log in to the system, **Then** I see an in-app banner at the top of the dashboard: "⚠️ You have used 80% of your token credits (16M/20M). Remaining: 4M tokens."
+2. **Given** I am subscribed to Gold Fish plan and have used exactly 240 of 300 interviews (80%), **When** I next log in to the system, **Then** I see an in-app banner at the top of the dashboard: "⚠️ You have used 80% of interviews (240/300). 60 interviews remaining."
 
-3. **Given** my company has used exactly 20M tokens (100%) of the allocated 20M, **When** the system calculates remaining credits, **Then** I receive an email notification with subject "Token Usage Alert: 100% Limit Reached - Overage Charges Apply" and body explaining overage pricing and upgrade options
+3. **Given** my company has used exactly 300 interviews (100%) of Gold Fish annual quota, **When** the system calculates remaining quota, **Then** I receive an email notification with subject "Interview Quota Exhausted - Upgrade or Purchase Now" and body with options to upgrade plan or purchase individual interviews at RM15 each
 
-4. **Given** I have already received a 80% notification, **When** my usage increases from 16M to 17M (still under 100%), **Then** I do NOT receive duplicate 80% notifications (notification sent once per threshold per billing cycle)
+4. **Given** I have already received an 80% notification, **When** my usage increases from 240 to 250 interviews (still under 100%), **Then** I do NOT receive duplicate 80% notifications (notification sent once per threshold per billing year)
 
-5. **Given** I have crossed 100% usage threshold, **When** a new billing cycle starts and my credits reset, **Then** the notification flags are reset and I can receive new threshold notifications for the new cycle
+5. **Given** I have used 100% of quota, **When** a new subscription anniversary date arrives and quota resets, **Then** the notification flags are reset and I can receive new threshold notifications for the new year
+
+6. **Given** my account available balance drops to RM45 (below RM50 threshold) after interview completion settlement, **When** the system processes the balance update, **Then** I receive an email notification with subject "Low Account Balance Alert" and body stating "Your available balance is RM45. Top up now to avoid interview disruptions." with [Top Up Now] link
+
+7. **Given** my available balance is RM30 and I have remaining quota of 200 interviews, **When** I attempt to send an interview invitation (estimated cost RM50), **Then** the system blocks the action with message "Insufficient account balance (RM30 available, RM50 required). Please top up your account to continue." and a [Top Up Now] button
+
+8. **Given** I have already received a low balance notification when balance dropped to RM45, **When** my balance increases to RM200 after top-up, and then later drops to RM40, **Then** I receive a new low balance notification (notifications are retriggered when balance crosses threshold again)
 
 ---
 
-### User Story 5 - Temporary Payment Method (Manual Bank Transfer) (Priority: P2)
+### User Story 5 - Purchase Individual Interviews (Priority: P1)
 
-For the initial release, Company Admins can top up account balance via bank transfer by sending payment receipt, which Super Admin/Finance team manually updates in the back office.
+Company Admins on any subscription tier can purchase individual interviews at RM15 each when they run out of annual quota or want to conduct additional interviews. Purchases add to quota counter and deduct from account balance.
 
-**Why this priority**: This is a temporary workaround until full payment gateway integration is complete. It's P2 because basic top-up functionality is needed to allow companies to add funds, but it's not the ideal long-term solution.
+**Why this priority**: Individual interview purchase provides flexibility for hiring spikes and is essential for companies that exceed their subscription quota. This directly enables revenue and prevents customer churn.
 
-**Independent Test**: Can be fully tested by initiating a top-up request, making a bank transfer, uploading a payment receipt via designated channel (email), and verifying that back-office admin can credit the account balance and the system reflects the updated balance. Delivers value by enabling companies to fund their accounts during MVP phase.
-
-**Acceptance Scenarios**:
-
-1. **Given** I need to add funds to my account, **When** I click "Top Up" on the dashboard, **Then** I see payment instructions: "Bank Transfer Details: Bank Name: [BANK], Account Number: [ACCOUNT], Reference: [COMPANY_ID]-TOPUP. After payment, email receipt to billing@company.com with amount and company name"
-
-2. **Given** I have made a bank transfer for $500 and emailed the receipt to billing@company.com, **When** the finance team receives the receipt, **Then** they can access the back-office admin panel, locate my company account, upload the receipt, and credit $500 to my account balance
-
-3. **Given** my top-up was processed by the finance team, **When** I refresh my dashboard, **Then** I see my account balance updated to reflect the new funds (e.g., $50 → $550), and the top-up transaction appears in my billing history
-
-4. **Given** the finance team credited my account, **When** I check my email, **Then** I receive a payment confirmation email with subject "Account Top-Up Confirmed: $500 Added" containing company name, amount, new balance, and receipt attachment
-
----
-
-### User Story 6 - Invitation Hold, Settlement & Expiry Refund (Priority: P1)
-
-Company Admins need reliable control of spending power: invitations should reserve funds up-front, consume on completion, and automatically refund on expiry to prevent over-inviting and dangling holds.
-
-**Why this priority**: Prevents overallocation and ensures accurate, timely accounting of funds. Directly impacts the ability to run interviews without billing surprises and avoids lock-ups of unused funds.
-
-**Independent Test**: Can be fully tested by sending invitations with known estimated costs, starting/completing an interview to settle charges, and waiting (or simulating time) for expiry to confirm reserved fund release and notifications. No dependencies on external payment gateways.
+**Independent Test**: Can be fully tested by simulating quota exhaustion, initiating individual interview purchase, paying via bank transfer, and verifying that the purchase is credited to their quota counter AND deducted from balance, allowing new interview invitations. Delivers immediate value by enabling recruitment continuation.
 
 **Acceptance Scenarios**:
 
-1. **Given** I am a Company Admin with `Total Balance = $300` and `Reserved Balance = $0`, **When** I click `Send Invitation` for an interview with estimated cost `$100`, **Then** the system checks `Available = Total - Reserved = $300` and reserves `$100` creating a `ReservationHold`, resulting in `Reserved = $100` and `Available = $200`.
+1. **Given** I am a Company Admin with Gold Fish subscription (300 interviews/year) and have used all 300 interviews with account balance RM500, **When** I attempt to send a new invitation, **Then** the system blocks the action with message "Interview quota exhausted (300/300). Purchase individual interviews at RM15 each to continue." with a [Purchase Now] button
 
-2. **Given** I have `Available = $80` and attempt to send an invitation with estimated cost `$100`, **When** I click `Send Invitation`, **Then** the action is blocked with an error "Insufficient available balance ($80). Please top up or cancel existing holds" and no reservation is created.
+2. **Given** I click "Purchase Individual Interviews", **When** I select quantity "10 interviews", **Then** I see a checkout summary: "10 interviews × RM15 = RM150.00 total", payment instructions for bank transfer, unique reference code for this purchase, and note "RM150 will be deducted from your account balance (RM500 available) and 10 interviews will be added to your quota."
 
-3. **Given** a reserved invitation for `$100` exists, **When** the Candidate starts and completes the interview consuming `$92` of tokens, **Then** the reservation is cleared, `$92` is deducted from `Total Balance`, and `$8` is released (no longer reserved), updating `Reserved` and `Available` accordingly and recording a settlement `BillingTransaction`.
+3. **Given** I make a bank transfer for RM150 for 10 individual interviews and email the receipt to billing@company.com with my account balance at RM500, **When** the finance team processes my receipt, **Then** my individual interview quota is credited with 10 interviews, my account balance is reduced to RM350, BillingTransaction is created (type: individual_purchase_debit, amount: RM150), and I receive email confirmation "10 additional interviews purchased. Account balance: RM350 remaining."
 
-4. **Given** a reserved invitation for `$100` exists, **When** the Candidate consumes `$120` of tokens (exceeds estimate), **Then** the reservation is cleared and `$120` is deducted from `Total Balance` with a shortfall adjustment; if this causes `Available` to go below `$0`, the system triggers System Lock on HR functions until funds are replenished.
+4. **Given** I have purchased 10 individual interviews and used 8 of them, **When** I view my subscription dashboard, **Then** I see "Plan Quota: 300/300 used", "Individual Interviews: 2 remaining", and "Total Available: 2 interviews"
 
-5. **Given** an invitation was created 4 days ago and is still `Pending`, **When** the hourly expiry job runs, **Then** the invitation status changes to `Expired`, the `$100` reserved amount is released back to `Available`, a `reservation_release` `BillingTransaction` is recorded, and HR admins receive a summary notification of credits returned.
+5. **Given** I have account balance RM10 (insufficient for 1 interview at RM15), **When** I attempt to purchase individual interviews, **Then** the system blocks the purchase with message "Insufficient account balance (RM10 available, RM15 required per interview). Please top up your account first." with [Top Up Now] button
 
-6. **Given** multiple pending invitations (e.g., 3 holds totaling `$250`) have passed 3 days, **When** the expiry job runs, **Then** all eligible invitations are expired in a single run, `$250` is released back to `Available`, and a single notification summarizes the count and total credited.
-
-7. **Given** the expiry job encounters a transient failure after expiring an invitation but before releasing funds, **When** the job retries, **Then** the operation is idempotent: no double-expiry occurs, and the release is applied exactly once, with audit logs reflecting the final state.
+6. **Given** I have mixed quota (plan + individual interviews), **When** I send invitations, **Then** the system consumes plan quota first, and only uses individual interviews after plan quota is exhausted
 
 ---
 
 ### Edge Cases
 
-- What happens when balance reaches $0 mid-interview? (CLARIFIED: Block further token consumption immediately. Interview cannot proceed without available balance. User must top up to continue.)
-- What happens when balance approaches $0 during a locked session? (NEW: If session is already locked at start with `current_balance > 0`, allow the interview to finish gracefully without mid-sentence interruption. Compute charges post-interview. If the post-charge makes balance negative, trigger System Lock for HR functions until top-up restores balance.)
-- How does the system handle concurrent top-up transactions? (Queue transactions, process sequentially, prevent race conditions on balance updates)
-- What happens if invitations exceed Available Balance? (NEW: Block `Send Invitation` if `available_balance < estimated_cost`; display available vs reserved amounts to guide HR.)
-- What if actual interview cost differs from reserved estimate? (NEW: On settlement, refund any excess reservation or charge any shortfall; ensure `BillingTransaction` reflects adjustments.)
-- How to handle concurrent reservation and release operations? (NEW: Use transactional updates with row-level locks to prevent double-reservation or double-release; idempotent job for expiry.)
-- What happens if a bank transfer top-up fails or is reversed after being credited? (Back-office admin manually deducts the amount, system logs adjustment, notify company admin)
+- What happens when a company exceeds their annual interview quota? (CLARIFIED: Block `Send Invitation` with message about upgrading plan or purchasing individual interviews. Interview cannot proceed without available quota.)
+- What happens when an HR invites 10 candidates but only 5 complete interviews? (CLARIFIED: Quota is reserved on invitation send. On completion: reserved quota is consumed and actual cost is settled against account balance. On expiry: reserved quota is released, quota unchanged.)
+- What happens when company has quota but insufficient balance? (NEW: Block `Send Invitation` with message "Insufficient balance (RM50 available, RM100 required). Please top up your account to continue.")
+- What happens if estimated cost is RM100 but actual cost is RM120 (overage)? (NEW: System settles RM120, consuming RM20 more than reserved. If this causes negative balance, trigger alert to admin to top up.)
+- What happens if estimated cost is RM100 but actual cost is RM80 (underrun)? (RM80 deducted from balance, RM20 released back to available balance)
+- How does the system handle interview cancellations? (Cancelled interviews do NOT refund quota consumption. Once an interview is completed/submitted, the quota is permanently consumed regardless of outcomes. Reserved quota is released if interview cancelled before completion.)
 - How are notifications handled for companies with multiple admins? (CLARIFIED: Send to all users with admin flag, future enhancement: notification preferences)
-- What happens when a company cancels their subscription? (Set status to "Cancelled", remaining balance handling per Clarification #14 TBD, disable future token consumption)
+- What happens when a company cancels their subscription? (Set status to "Cancelled", prorated refund issued for unused quota period, service continues until renewal date)
 - How to handle date range filters that span multiple months for usage analytics? (Show aggregated data across all selected months with monthly breakdown markers in charts)
-- What happens if a Company Admin tries to download a PDF receipt/invoice still being generated? (Disable download button until generation complete, show "Processing..." status)
+- What happens if a Company Admin tries to download a PDF invoice still being generated? (Disable download button until generation complete, show "Processing..." status)
 - How are timezone differences handled for usage tracking and transaction timestamps? (Use company's configured timezone for all billing operations, display times in that timezone)
-- What happens if token pricing rate changes during active subscription? (New rate applies to future usage only, historical usage retains original rate, notify admins of rate change)
-- How is low-balance threshold calculated if daily usage varies significantly? (Use rolling 7-day average usage to estimate depletion date, update estimate daily)
+- How is remaining interview estimate calculated if usage varies significantly? (Use rolling 7-day average usage to estimate remaining quota depletion, update estimate daily)
+- What happens if a company upgrades mid-year from Gold to Whale? (NEW: Pro-rate the difference. If Gold cost RM3600 for remaining 200 days and Whale annual is RM12000, charge prorated difference, grant new annual quota immediately)
+- Can companies downgrade plans mid-year? (Allowed with prorated credit/charge. If downgrading reduces quota below current usage, existing data is preserved but new invitations are blocked until usage falls below new quota)
+- How are individual interviews tracked separately from subscription quota? (NEW: Use separate fields in CompanySubscription: `subscription_interviews_remaining` and `individual_interviews_purchased`. Both are checked during authorization.)
+- What happens if the system processes an interview completion after 24 hours? (Quota consumption happens immediately, retroactively if necessary. All charges must be recorded with completion timestamp for audit purposes)
 
 ## Requirements _(mandatory)_
 
 ### Functional Requirements
 
-- **FR-000**: Pre-check before HR invitation: When HR triggers `Send Invitation`, the system MUST verify that `AccountBalance.current_balance > X` (configurable threshold). If the check fails, block the action and display guidance to top up. Log the attempt for audit.
+- **FR-000**: Require active subscription plan: Company MUST have an active subscription plan to send any interview invitations. If a company has no plan or plan is cancelled/suspended, system MUST block `Send Invitation` with message "No active subscription plan. Please subscribe to a plan to send invitations." with [View Plans] CTA.
 
-- **FR-031**: Invitation hold reservation: On `Send Invitation`, the system MUST reserve the estimated interview cost by moving funds from Available Balance to Reserved Balance (or creating a Pending Deduction). Formula for Available Balance: `available = total_balance - reserved_balance`. If `available < estimated_cost`, block the action.
+- **FR-000a**: Interview quota and balance check before HR invitation: When HR triggers `Send Invitation`, the system MUST verify: (1) company has active subscription plan, (2) company has remaining interview quota (subscription quota + individual purchases > 0), AND (3) company has sufficient account balance to cover estimated interview cost. If any check fails, block the action with appropriate error message. Log the attempt for audit.
 
-- **FR-032**: Reserved balance accounting: The dashboard MUST show both Available Balance and Reserved Balance to reflect spending power and held funds. All authorization checks for token-consuming HR actions MUST use Available Balance, not Total Balance.
+- **FR-001**: Display subscription tier and interview allocation: System MUST display subscription tier (Gold Fish/Dolphin/Whale), annual interview allocation, interviews used this year, remaining interviews, and subscription anniversary date on the subscription dashboard.
 
-- **FR-033**: Interview consumption settlement: When the Candidate completes the interview, the system MUST clear the specific reservation/hold and permanently deduct the actual final cost from Total Balance based on real token usage. If actual cost differs from reserved estimate, adjust accordingly (refund excess or charge shortfall).
+- **FR-002**: Display interview usage analytics: System MUST provide interview usage visualization via line graphs with toggleable daily/monthly views and date range filtering.
 
-- **FR-034**: Invitation expiry refund job: A scheduled background job MUST run hourly to detect invitations with `status = pending` and `created_at > 3 days`. It MUST update status to `expired`, release the reserved amount back to Available Balance, and append a `BillingTransaction` of type `reservation_release` with audit details.
+- **FR-003**: Display interview usage breakdown: System MUST provide interview usage breakdown by status (completed, pending, cancelled) in pie chart format.
 
-- **FR-035**: Expiry notifications: Upon reservation release, the system MUST notify HR admins with a summary (e.g., "3 invitations expired; $X.00 has been credited back to your available balance") and log the event in `NotificationLog`.
+- **FR-004**: Display billing history with invoices: System MUST maintain billing history with records for all subscription invoices, individual interview purchases, and payments, with columns: Invoice Number, Date, Description, Amount, Status, and Actions.
 
-- **FR-001**: System MUST display subscription status (active/suspended/cancelled), subscription start date, and token pricing rate (e.g., "$25 per 1M tokens") on the subscription dashboard
-- **FR-002**: System MUST display current account balance (prepaid funds remaining in USD) and calculate in real-time by subtracting total usage charges from total deposits
-- **FR-003**: System MUST provide token usage visualization via line graphs with toggleable daily/monthly views and date range filtering
-- **FR-004**: System MUST provide token usage breakdown by purpose (e.g., interview question generation, response scoring, job description analysis) in pie chart format
-- **FR-005**: System MUST display current account balance (prepaid funds remaining) and calculate deductions based on token usage at the defined rate per million tokens
-- **FR-006**: System MUST maintain billing history with records for all invoices and payments, including prorated charges for subscription changes
-- **FR-007**: System MUST generate downloadable PDF invoices containing: company name, invoice number, date, itemized charges, total amount, payment method, and payment status
-- **FR-008**: System MUST support billing history filtering by date range and transaction type (top-up/usage charge)
-- **FR-009**: System MUST send email notifications when account balance falls below the defined low-balance threshold amount (TBD), with notifications sent only once until balance is topped up above threshold
-- **FR-010**: System MUST display in-app banner alerts when balance is below low-balance threshold and modal alerts when balance reaches zero
-- **FR-011**: System MUST allow Company Admins to initiate account top-ups via designated payment method (bank transfer in Phase 1)
-- **FR-012**: System MUST allow Company Admins (non-enterprise) to self-service downgrade plans, generating prorated invoices and warning about usage-over-limit scenarios
-- **FR-013**: System MUST allow Company Admins (non-enterprise) to cancel subscriptions, with service continuing until the end of the current billing period
-- **FR-014**: System MUST allow Company Admins (non-enterprise) to change billing cycle (monthly ↔ yearly), applying prorated charges and showing savings calculations
-- **FR-015**: System MUST prevent self-service subscription modifications unless an active payment method is linked to the account
-- **FR-016**: System MUST disable self-service subscription management for Enterprise plan customers, directing them to contact account managers
-- **FR-017**: System MUST provide bank transfer payment instructions on unpaid invoices, including bank details and unique reference number
-- **FR-018**: System MUST allow back-office admins to manually mark invoices as paid and upload payment receipts for bank transfer payments
-- **FR-019**: System MUST send payment confirmation emails when invoices are marked as paid by back-office admins
-- **FR-020**: System MUST prevent duplicate threshold notifications within the same billing cycle (track notification state per company per cycle)
-- **FR-021**: System MUST reset notification flags at the start of each new billing cycle
-- **FR-022**: System MUST lock subscription modifications during active processing and display "Change in progress" status
-- **FR-023**: System MUST block all token consumption when account balance reaches zero or remaining tokens reach zero, preventing any service usage until funds/credits are replenished
+- **FR-005**: Generate downloadable PDF invoices: System MUST generate downloadable PDF invoices containing: company name, invoice number, date, itemized charges (subscription fee OR individual interview purchases), total amount, payment method, and payment status.
 
-- **FR-023a**: Candidate session start lock: When a Candidate clicks `Start`, the system MUST verify `current_balance > 0`. If true, the system MUST lock the session (reserve sufficient credit or mark an immutable session lock) so that the AI interview can complete without mid-sentence interruption. If false, block start with a zero-balance modal and top-up CTA.
+- **FR-006**: Support billing history filtering: System MUST support billing history filtering by date range and invoice type (subscription/individual_purchase).
 
-- **FR-023b**: Graceful interview completion: Once a session is locked and started, AI responses MUST not be interrupted mid-generation. The session MUST complete, and charges are computed at the end of the session.
+- **FR-007**: Announce subscription tier options and pricing: System MUST clearly display all three subscription tiers: Gold Fish (RM3600/year, 300 interviews), Dolphin (RM7200/year, 800 interviews), Whale (RM12000/year, 2000 interviews) with per-interview rates (RM12, RM9, RM6 respectively).
 
-- **FR-023c**: Post-interview charging and enforcement: After the interview finishes, the system MUST deduct the final cost based on actual tokens consumed. If the deduction causes the balance to be negative, the system MUST immediately trigger System Lock on HR functions (e.g., disable `Send Invitation`, `Create Job`, and other token-consuming operations) until the balance is replenished above zero.
-- **FR-024**: System MUST display prominent warnings when remaining balance falls below the defined low-balance threshold (amount TBD)
-- **FR-025**: System MUST allow Company Admins to initiate account top-ups (prepaid fund deposits) via the designated payment method
-- **FR-026**: System MUST deduct from account balance in real-time as tokens are consumed, updating balance immediately after each token usage event
-- **FR-027**: System MUST send billing notifications (invoices, payment confirmations, low-balance alerts) ONLY to users with admin flag, not all company users
-- **FR-028**: System MUST calculate billing cycles on anniversary basis (subscription start date to same date next period), not calendar month alignment
-- **FR-029**: System MUST use company's configured timezone for all billing operations, dashboard displays, and notification scheduling
-- **FR-030**: System MUST support dual-axis combination charts showing both usage over time (line) and usage by purpose (bar/area) on the same visualization
+- **FR-008**: Enable individual interview purchases: System MUST allow Company Admins to purchase individual interviews at RM15 each when plan quota is exhausted, with payment via bank transfer.
+
+- **FR-009**: Track individual interview quota separately: System MUST maintain separate quota counters for subscription interviews and purchased individual interviews, displaying both on the dashboard.
+
+- **FR-010**: Consume plan quota before individual interviews: When candidate completes an interview, system MUST consume plan quota first, then use individual purchased interviews only after plan quota is exhausted.
+
+- **FR-011**: Send interview quota alerts at 80% and 100%: System MUST send email and in-app notifications when company reaches 80% interview quota usage (warning to upgrade) and 100% quota usage (urgent message to purchase or upgrade).
+
+- **FR-012**: Prevent duplicate quota alerts: System MUST prevent sending duplicate notifications for the same threshold within the same subscription year. Flags reset on subscription anniversary date.
+
+- **FR-013**: Support subscription upgrades with prorated charges: System MUST allow Company Admins to upgrade plans mid-year, applying pro-rated charges for the difference and immediately granting new annual quota based on upgrade date.
+
+- **FR-014**: Support subscription downgrades with refunds: System MUST allow Company Admins to downgrade plans mid-year, issuing pro-rated refunds or charges and warning if current interview usage exceeds new plan quota (existing data read-only, new invitations blocked).
+
+- **FR-015**: Allow subscription cancellation: System MUST allow Company Admins to cancel subscriptions, issuing pro-rated refund for unused period and allowing service continuation until renewal date.
+
+- **FR-016**: Process bank transfer payments for individual purchases: System MUST provide bank transfer payment instructions for individual interview purchases, with unique reference code for tracking.
+
+- **FR-017**: Allow back-office admins to credit individual interviews: System MUST allow Super Admin/Finance team to process bank transfer receipts and credit individual interviews to company accounts after payment verification.
+
+- **FR-018**: Send payment confirmation emails: System MUST send email confirmation when individual interviews are purchased, subscription is upgraded, or bank transfer payment is processed, detailing company name, items purchased, cost, and new quota balance.
+
+- **FR-019**: Calculate annual billing on subscription anniversary: System MUST calculate all subscription and quota usage based on anniversary date (subscription start date to same date next year), not calendar month alignment.
+
+- **FR-020**: Use company timezone for billing operations: System MUST use company's configured timezone for all billing operations, dashboard displays, quota resets, and notification scheduling.
+
+- **FR-021**: Make Job Description creation free: System MUST NOT charge any interview quota or credits for creating Job Descriptions. Job Description is a free operation for all companies.
+
+- **FR-022**: Calculate estimated quota depletion date: System MUST display estimated interview quota depletion date based on rolling 7-day average interview completion rate, updated daily on dashboard.
+
+- **FR-023**: Block quota overage gracefully: When company exceeds quota and attempts `Send Invitation`, system MUST block with clear message showing: current plan quota exhausted, remaining individual interviews (if any), upgrade options, and purchase CTA.
+
+- **FR-024**: Audit all quota consumption: Every interview completion MUST create a `BillingTransaction` record with type `interview_completion`, including company_id, interview_id, interview_cost (RM), timestamp, and quota source (plan_quota or individual_purchase).
+
+- **FR-025**: Support bulk individual interview purchase: System MUST allow Company Admins to purchase multiple individual interviews in a single transaction (e.g., buy 10 interviews at RM150 total).
+
+- **FR-026**: Display quota breakdown in invoice: PDF invoices for subscription billing MUST show: subscription tier, annual allocation, remaining quota, and link to purchase individual interviews if needed.
+
+- **FR-027**: Reserve interview quota when sending invitation: When HR sends an interview invitation, system MUST reserve one interview from available quota (plan quota first, then individual purchases). If unreserved quota is insufficient, block the invitation with a clear error.
+
+- **FR-028**: Convert reserved quota on completion: When a candidate completes an interview, system MUST convert the reserved quota to consumed quota, record a `BillingTransaction` for the settlement, and tag the quota source (plan or individual purchase).
+
+- **FR-029**: Release reserved quota on expiry/cancellation: When an invitation expires (3 days) or is cancelled before completion, system MUST release the reserved quota back to the available pool and mark the invitation as expired/cancelled.
+
+- **FR-030**: Track account balance and quota reservations: System MUST maintain company account balance and track reserved_interviews_count to derive available quota: (subscription_interviews_remaining + individual_interviews_remaining) - reserved_interviews_count.
+
+- **FR-031**: Top-up account balance via bank transfer: System MUST allow Company Admins to top up account balance via bank transfer, with back-office admin approval to credit the account.
+
+- **FR-032**: Block invitations on insufficient balance: If company has quota remaining but insufficient available balance for estimated interview cost, system MUST block invitation with message "Insufficient balance. Please top up your account."
+
+- **FR-033**: Quota exhaustion flow options: When company exhausts subscription plan quota (interviews_remaining = 0), system MUST display three options on dashboard and in send-invitation error message:
+  1. **Upgrade Plan**: [Upgrade] button → allows switching to higher tier (e.g., Gold Fish to Dolphin) with prorated charges, immediately granting new annual quota
+  2. **Purchase Individual Interviews**: [Purchase] button → buy interviews at RM15 each, deducted from balance, added to quota pool
+  3. **Top Up Balance**: [Top Up] button → deposit funds to enable individual interview purchases if balance is insufficient
 
 ### Key Entities
 
-- **SubscriptionPlan**: Defines the single pay-per-use plan with attributes: name (e.g., "Pay-As-You-Go"), description, token_price_per_million (rate charged per 1M tokens), currency (USD), features (JSON/array of included features like API access, support level, etc.)
+- **SubscriptionPlan**: Defines the three tiered subscription plans with attributes:
 
-- **CompanySubscription**: Links companies to their subscription with attributes: company_id (FK), subscription_plan_id (FK), status (active/suspended/cancelled), subscription_start_date, subscription_anniversary_date (annual renewal date), service_end_date (nullable, for cancelled subscriptions), created_at, updated_at
+  - name (Gold Fish, Dolphin, Whale)
+  - annual_price_rmb (RM3600, RM7200, RM12000)
+  - annual_interview_quota (300, 800, 2000)
+  - cost_per_interview_rmb (RM12, RM9, RM6)
+  - description (e.g., "Best for small teams")
+  - features (JSON/array of included features)
 
-- **TokenUsage**: Records individual token consumption events (already exists per user input) with expected attributes: id, company_id (FK), user_id (FK - who triggered the usage), purpose (enum: interview_question_generation, interview_response_scoring, job_description_analysis, resume_parsing, etc.), token_count, timestamp, metadata (JSON - interview_id, job_id, etc. for audit trail)
+- **CompanySubscription**: Links companies to their subscription with attributes:
 
-- **BillingTransaction**: Stores all financial transactions (top-ups and usage charges) with attributes: id, company_id (FK), transaction_type (top_up/usage_charge), amount (positive for top-ups, negative for usage), balance_before, balance_after, transaction_date, description (e.g., "Top-up via bank transfer", "Token usage: 1.5M tokens @ $25/1M"), payment_method_id (FK, nullable for usage charges), payment_receipt_url (for bank transfers), processed_by_user_id (FK, for back-office credits), created_at, updated_at
+  - id, company_id (FK), subscription_plan_id (FK)
+  - status (active/suspended/cancelled)
+  - subscription_start_date (the anniversary date for annual billing)
+  - subscription_anniversary_date (same as start_date, used for annual renewal)
+  - interviews_remaining_this_year (decremented each time interview completes)
+  - individual_interviews_purchased (total individual interviews bought, separate from plan)
+  - individual_interviews_remaining (decremented when individual interviews are consumed)
+  - reserved_interviews_count (interviews held for pending invitations)
+  - available_interviews_remaining (calculated: subscription_interviews_remaining + individual_interviews_remaining - reserved_interviews_count)
+  - account_balance_rmb (total account balance in RM)
+  - last_quota_reset_date (timestamp of last anniversary reset)
+  - service_end_date (nullable, for cancelled subscriptions)
+  - created_at, updated_at
 
-- **PaymentMethod**: Stores payment method references (NOT card details) with attributes: id, company_id (FK), type (credit_card/bank_transfer/other), is_active (boolean), payment_gateway_token (tokenized reference from Stripe/PayPal/etc.), card_last_four (for display only), card_expiry_date, billing_address, created_at, updated_at
+- **InterviewCompletion**: Records each completed interview for quota consumption tracking with attributes:
 
-- **AccountBalance**: Tracks prepaid account balance for post-pay model with attributes: id, company_id (FK), current_balance (monetary amount), currency (fixed: USD), last_top_up_date, last_top_up_amount, total_lifetime_deposits, total_lifetime_usage, created_at, updated_at
+  - id, company_id (FK), interview_id (FK), candidate_id (FK)
+  - interview_completed_at (timestamp when interview was submitted)
+  - quota_consumed_from (enum: plan_quota or individual_purchase)
+  - cost_rmb (RM12, RM9, RM6, or RM15 depending on source)
+  - billing_transaction_id (FK, reference to BillingTransaction for audit)
+  - created_at
 
-- **ReservationHold**: Represents reserved funds tied to invitations with attributes: id, company_id (FK), invitation_id (FK), estimated_cost_amount, status (active/cleared/expired/released), reserved_at, released_at (nullable), cleared_at (nullable), created_at, updated_at. The sum of active holds contributes to `reserved_balance`.
+- **BillingTransaction**: Stores all financial transactions (annual subscription billing, individual purchases, balance top-ups, interview settlements) with attributes:
 
-- Update `AccountBalance` to include: `reserved_balance` (sum of active holds) and derived `available_balance = current_balance - reserved_balance` for display and checks.
+  - id, company_id (FK)
+  - transaction_type (annual_subscription / individual_interview_purchase / balance_topup / interview_settlement)
+  - amount_rmb (positive for charges, based on plan or individual purchases)
+  - transaction_date (when the charge was processed)
+  - description (e.g., "Annual subscription - Gold Fish Plan (300 interviews)", "Individual interview purchase (5 interviews × RM15)", "Interview settlement - Interview #123", "Balance top-up via bank transfer")
+  - subscription_plan_id (FK, nullable - which plan this charge is for)
+  - interview_id (FK, nullable - for interview-related transactions)
+  - interview_count_charged (number of interviews in this transaction)
+  - payment_method (bank_transfer, etc.)
+  - payment_receipt_url (for bank transfers)
+  - processed_by_user_id (FK, for back-office processing)
+  - status (pending/completed/failed)
+  - invoice_url (link to generated PDF invoice)
+  - created_at, updated_at
 
-- **TopUpTransaction**: Records all account top-up (deposit) events with attributes: id, company_id (FK), amount, payment_method_id (FK), transaction_date, status (pending/completed/failed), payment_gateway_transaction_id, initiated_by_user_id (FK), created_at, updated_at
+- **QuotaReservation**: Tracks reserved interview quota for pending invitations with attributes:
 
-- **NotificationLog**: Tracks sent notifications to prevent duplicates with attributes: id, company_id (FK), notification_type (email/in_app_banner/in_app_modal), trigger_event (low_balance/zero_balance), sent_at, acknowledged_at (for modals), created_at
+  - id, company_id (FK), interview_id (FK)
+  - reserved_interview_count (typically 1 per invitation)
+  - reserved_from (plan_quota or individual_purchase)
+  - estimated_cost_rmb (optional, for cost forecasting only)
+  - reserved_at (timestamp when reservation was created)
+  - expires_at (timestamp when reservation expires - 3 days from creation)
+  - status (active/consumed/released/cancelled)
+  - consumed_at (timestamp when reservation was converted to consumption)
+  - released_at (timestamp when reservation was released without consumption)
+  - billing_transaction_id (FK, reference to settlement transaction)
+  - created_at, updated_at
+
+- **PaymentMethod**: Stores payment method references with attributes:
+
+  - id, company_id (FK)
+  - type (bank_transfer, credit_card, etc.)
+  - is_active (boolean)
+  - payment_details (bank account info, card last 4, etc. - encrypted)
+  - created_at, updated_at
+
+- **NotificationLog**: Tracks sent notifications to prevent duplicates with attributes:
+  - id, company_id (FK)
+  - notification_type (email/in_app_banner/in_app_modal)
+  - trigger_event (quota_80_percent / quota_exhausted / purchase_confirmation / subscription_anniversary)
+  - sent_at
+  - acknowledged_at (for modals)
+  - subscription_year (to track which year's quota this notification is for)
+  - created_at
 
 ## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
-- **SC-001**: Company Admins can view subscription status and account balance in under 2 clicks from the main dashboard, with page load time under 2 seconds
-- **SC-002**: Account balance calculations are accurate to the cent when compared to sum of all top-up and usage transactions
-- **SC-003**: Usage charge calculations are 100% accurate and match the formula: (tokens consumed / 1,000,000) × token_price_per_million
-- **SC-004**: Email notifications for low-balance and zero-balance alerts are delivered within 5 minutes of threshold being crossed
-- **SC-005**: In-app notifications appear immediately upon user login after low-balance/zero-balance threshold is crossed (no delay beyond page load time)
-- **SC-006**: Duplicate notifications for the same threshold within the same billing cycle occur in 0% of cases
-- **SC-007**: PDF receipts/transaction records are generated within 10 seconds of request, with 100% accuracy in data (no missing/incorrect amounts)
-- **SC-008**: Billing history page loads and displays up to 12 months of transactions in under 3 seconds, with pagination for older records
-- **SC-009**: Date range filtering on usage charts returns results in under 2 seconds for up to 1 year of data
-- **SC-010**: Token consumption is blocked within 1 second when account balance reaches zero, with 100% enforcement (no unauthorized usage)
-- **SC-011**: Manual top-up processing (temporary bank transfer workflow) is completed within 1 business day from receipt submission to account balance credit
-- **SC-012**: Account balance updates reflect within 5 seconds of token usage events for real-time accuracy
-- **SC-015**: Chart visualizations (line graphs, pie charts, dual-axis charts) render correctly across all major browsers (Chrome, Firefox, Safari, Edge) with no data display errors
+- **SC-001**: Company Admins can view subscription tier, interview quota (plan vs individual), reserved quota (pending invitations), and account balance in under 2 clicks from the main dashboard, with page load time under 2 seconds
+- **SC-002**: Interview quota calculations are 100% accurate and match the formula: interviews_used from CompanySubscription.interviews_remaining_this_year
+- **SC-003**: Interview quota consumption is instantaneous when candidate completes interview, reflected on dashboard within 5 seconds
+- **SC-004**: Quota reservation occurs within 1 second of invitation send, with estimated cost accuracy ±10%
+- **SC-005**: Reservation conversion on interview completion occurs within 30 seconds, consuming reserved quota and settling actual cost against account balance
+- **SC-006**: Expired invitation quota release occurs within 30 minutes of expiry (3-day timeout)
+- **SC-007**: Email notifications for 80% and 100% quota alerts are delivered within 5 minutes of threshold being crossed
+- **SC-008**: Email notifications for low balance (< RM50) are delivered within 5 minutes of dropping below threshold
+- **SC-009**: In-app notifications appear immediately upon user login after quota/balance threshold is crossed (no delay beyond page load time)
+- **SC-010**: Duplicate notifications for the same threshold within the same subscription year occur in 0% of cases
+- **SC-011**: PDF invoices for subscriptions and individual purchases are generated within 10 seconds of request, with 100% accuracy in data (no missing/incorrect amounts or interview counts)
+- **SC-012**: Billing history page loads and displays up to 3 years of transactions (including all quota reservations, settlements, releases) in under 3 seconds, with pagination for older records
+- **SC-013**: Date range filtering on usage charts returns results in under 2 seconds for up to 3 years of data
+- **SC-014**: Interview quota check is enforced within 1 second when `Send Invitation` is triggered, blocking if quota is exhausted (100% enforcement)
+- **SC-015**: Account balance check is enforced within 1 second when `Send Invitation` is triggered, blocking if available balance insufficient (100% enforcement)
+- **SC-016**: Manual individual interview purchase processing (bank transfer workflow) is completed within 1 business day from receipt submission to quota credit AND balance deduction
+- **SC-017**: Subscription upgrade/downgrade with prorated charges is calculated accurately and credited/charged within 1 hour of approval
+- **SC-018**: Estimated quota depletion date calculation is updated daily and uses rolling 7-day average accuracy (±1 day margin acceptable)
+- **SC-019**: Chart visualizations (line graphs, pie charts) render correctly across all major browsers (Chrome, Firefox, Safari, Edge) with no data display errors
+- **SC-020**: Quota reservation audit trail provides 100% traceability from reservation → settlement/release with no orphaned holds
 
 ---
 
@@ -255,39 +336,63 @@ Company Admins need reliable control of spending power: invitations should reser
 
 ### Answered Clarifications
 
-0. **Subscription Model**: ✅ **CLARIFIED** - System has only ONE subscription plan (pay-as-you-go). All tokens are charged at a fixed rate per million tokens. NO free token allocation is provided with the subscription. Companies must maintain prepaid balance to use the service.
+0. **Mandatory Subscription Plan**: ✅ **CLARIFIED** - Company MUST have an active subscription plan to send interview invitations. No interviews can be sent without an active plan. Cancelled or suspended plans block all interview operations until plan is reactive or new plan is selected.
 
-1. **Payment Gateway Integration Timeline**: When will the permanent credit card payment gateway be integrated to replace the temporary bank transfer workflow? Which gateway (Stripe, PayPal, Square)? [NEEDS CLARIFICATION]
+1. **Interview Quota Consumption**: ✅ **CLARIFIED** - Interview quota is ONLY consumed when a candidate completes and submits an interview. Sending invitations reserves quota (so it cannot be double-booked) but does NOT consume it. Expired or cancelled invitations do NOT consume quota. Once consumed, quota is not refundable regardless of interview outcome.
 
-2. **PCI Compliance**: ✅ **CLARIFIED** - Credit card details will NOT be stored in our database. Will use tokenized references from payment gateway. This reduces PCI compliance requirements significantly.
+2. **Individual Interview Purchases**: ✅ **CLARIFIED** - Individual interviews are purchased via bank transfer at RM15 each and are tracked separately from plan quota. System consumes plan quota first, then individual purchases when plan quota is exhausted. Requires active plan + sufficient balance.
 
-3. **Enterprise Plan Handling**: What constitutes an "Enterprise plan"? Is this determined by a flag in subscription_plan table, or by contract value/custom terms? Who manages Enterprise subscription changes (dedicated account manager, sales team)? [NEEDS CLARIFICATION]
+3. **Payment Method**: ✅ **CLARIFIED** - Initial payment method is bank transfer (manual processing by finance team). Credit card integration (Stripe/PayPal) to be added in future phase based on business needs.
 
-4. **Prorating Rules**: Confirm prorating calculation method - is it daily proration using (price / days_in_month × days_in_partial_period), or calendar-day-based (price / days_in_billing_cycle × days_used)? [NEEDS CLARIFICATION]
+4. **Billing Cycle**: ✅ **CLARIFIED** - Billing cycles are anniversary-based (subscription start date to same date next year), not calendar month aligned. Subscription reset happens on subscription anniversary date each year.
 
-5. **Billing Notification Recipients**: ✅ **CLARIFIED** - Only users with admin flag (Company Admins) will receive billing notifications and invoices. Regular users will not receive billing emails.
+5. **Job Description Pricing**: ✅ **CLARIFIED** - Job Description creation is completely FREE for all companies regardless of subscription tier. No quota consumption, no charges.
 
-6. **Billing Cycle Start Date**: ✅ **CLARIFIED** - Billing cycles are anniversary-based (subscription date to same date next month/year), NOT calendar month aligned. Example: Subscribe on Dec 13 → billing cycle is Dec 13 to Jan 13.
+6. **Prorating on Upgrade/Downgrade**: ✅ **CLARIFIED** - Subscription changes are pro-rated based on days remaining in current year. Formula: (annual_price / 365) × days_remaining = prorated_amount. Difference is charged (upgrade) or credited (downgrade) immediately.
 
-7. **Low Balance Alerts**: ✅ **CLARIFIED** - System will alert/send email when remaining account balance (monetary, not token count) falls below a specific threshold amount. [Threshold amount TBD - requires stakeholder input on notification trigger level, e.g., $50 remaining]
+7. **Billing Notifications**: ✅ **CLARIFIED** - All billing notifications (subscription confirmations, quota alerts, purchase receipts) are sent ONLY to users with admin flag, not all company users.
 
-8. **Token Overuse Policy**: ✅ **CLARIFIED** - System will NOT allow token usage when account balance reaches zero. Token consumption is BLOCKED immediately at $0 balance until funds are added. This is a hard stop with no overage charges or credit extension.
+8. **Bulk Individual Purchases**: ✅ **CLARIFIED** - Companies can purchase multiple individual interviews in a single transaction (e.g., 5 interviews = RM75). Single invoice generated with total cost.
 
-9. **Billing Model - Prepaid/Top-Up**: ✅ **CLARIFIED** - System uses POST-PAY model with prepaid top-up functionality. Users deposit funds (e.g., $100 top-up), system deducts from account balance based on actual token usage. Balance decreases as tokens are consumed.
+9. **Subscription Cancellation**: ✅ **CLARIFIED** - Companies can cancel at any time. Pro-rated refund issued for unused period. Service continues until renewal date. After renewal date, all interview operations blocked.
 
-10. **Multi-Currency Support**: ✅ **CLARIFIED** - Multi-currency is NOT supported. All billing, invoices, and payments will be in a single currency (likely USD).
+10. **Timezone Handling**: ✅ **CLARIFIED** - All billing operations use company's configured timezone: quota resets on subscription anniversary at midnight in company timezone, notifications scheduled in company timezone.
+
+11. **Billing Notifications**: ✅ **CLARIFIED** - Only users with admin flag (Company Admins) will receive billing notifications and invoices. Regular users will not receive billing emails.
+
+12. **Billing Cycle Start Date**: ✅ **CLARIFIED** - Billing cycles are anniversary-based (subscription date to same date next year), NOT calendar month aligned. Example: Subscribe on Dec 13 → quota resets every Dec 13 annually.
+
+13. **Interview Quota Exhaustion**: ✅ **CLARIFIED** - When a company exhausts their plan quota, system blocks `Send Invitation` and displays three options: (1) Upgrade plan to higher tier, (2) Purchase individual interviews at RM15 each (uses balance), (3) Top up balance to enable purchases.
+
+14. **Prorating Calculation**: ✅ **CLARIFIED** - Pro-ration uses formula: (annual_plan_price / 365 days) × remaining_days_in_year = prorated_amount. Applied to upgrades, downgrades, and cancellations.
+
+15. **Interview Cancellation Refunds**: ✅ **CLARIFIED** - If a candidate cancels or doesn't complete an interview, no quota is consumed (quota only consumed on completion). Once interview is completed/submitted, quota consumption is permanent (non-refundable).
+
+16. **Multi-Quota Consumption**: ✅ **CLARIFIED** - System maintains two separate interview quotas per company: (1) subscription_interviews_remaining (from plan), (2) individual_interviews_remaining (from purchases). Subscriptions quota is consumed first, individual purchases only after plan quota reaches zero.
+
+17. **Billing Model - Hybrid Quota + Balance**: ✅ **CLARIFIED - OPTION A HYBRID** - System uses HYBRID quota + balance model:
+    - Subscription plans provide QUOTA (300/800/2000 interviews/year)
+    - All companies maintain an ACCOUNT BALANCE (in RM) for pay-as-you-go costs
+    - Individual interview purchases at RM15 ADD to quota counter (not just balance deduction)
+    - Sending invitation: System checks (1) quota available, (2) balance sufficient for estimated cost, then RESERVES QUOTA (plan first, then individual purchases)
+    - Interview completion: System CONSUMES reserved quota + SETTLES actual cost against account balance (no balance reservation)
+    - Invitation expiry (3 days): RELEASES reserved quota, quota unchanged
+    - Quota exhausted: HR can still send invitations if balance sufficient + purchase individual interviews (RM15 adds quota)
+    - Balance insufficient: System blocks invitation regardless of quota availability
 
 ### Remaining Open Questions
 
-11. **Low Balance Alert Threshold**: What is the specific remaining balance threshold that triggers low-balance alerts? (e.g., $50 remaining, or 10% of average monthly usage, or 5M tokens remaining?) [NEEDS CLARIFICATION]
+11. **Revenue Reporting**: How will revenue be tracked for analytics? Should individual interview purchases be reported separately from subscription MRR in God Mode dashboard? [NEEDS CLARIFICATION]
 
-12. **Top-Up Mechanism**: How do users initiate top-ups? Is it manual (user clicks "Add Funds" and makes payment), automatic (auto-recharge when balance hits threshold), or both options available? [NEEDS CLARIFICATION]
+12. **Audit Trail Depth**: Should all quota changes (resets, consumption, adjustments) be logged in a separate audit table for compliance purposes, or is BillingTransaction table sufficient? [NEEDS CLARIFICATION]
 
-13. **Minimum Top-Up Amount**: Is there a minimum top-up amount (e.g., minimum $50 deposit)? Maximum top-up amount? [NEEDS CLARIFICATION]
+13. **Top-Up Mechanism**: How do users initiate top-ups? Is it manual (user clicks "Add Funds" and makes payment), automatic (auto-recharge when balance hits threshold), or both options available? [NEEDS CLARIFICATION]
 
-14. **Unused Balance Handling**: If a user cancels their subscription, what happens to unused prepaid balance? (Refunded, rolled over to next billing cycle, forfeited?) [NEEDS CLARIFICATION]
+14. **Minimum Top-Up Amount**: Is there a minimum top-up amount (e.g., minimum $50 deposit)? Maximum top-up amount? [NEEDS CLARIFICATION]
 
-15. **Token Pricing Model**: How is token pricing calculated for the single pay-as-you-go plan? Fixed flat rate per million tokens regardless of volume, or tiered volume-based pricing (e.g., first 10M at $25/M, next 10M at $20/M, etc.)? [NEEDS CLARIFICATION]
+15. **Unused Balance Handling**: If a user cancels their subscription, what happens to unused prepaid balance? (Refunded, rolled over to next billing cycle, forfeited?) [NEEDS CLARIFICATION]
+
+16. **Token Pricing Model**: How is token pricing calculated for the single pay-as-you-go plan? Fixed flat rate per million tokens regardless of volume, or tiered volume-based pricing (e.g., first 10M at $25/M, next 10M at $20/M, etc.)? [NEEDS CLARIFICATION]
 
 ---
 
