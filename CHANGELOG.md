@@ -6,6 +6,10 @@ All notable changes to the AI-Talent-Analyst-System-Documentation project are do
 
 ### ✨ New Features
 
+- **Spec Generator Skill**: Automated skill for generating structured feature specifications following spec-template.md format with prioritized user stories (P1/P2/P3), Given-When-Then acceptance criteria, functional requirements, and success metrics. Includes bundled reference libraries with 40+ acceptance scenario patterns, 60+ requirement templates, and comprehensive success criteria metrics.
+
+- **Changelog Generator Skill**: Reusable skill for automatically creating user-facing changelogs from git commits by analyzing commit history, categorizing changes, and transforming technical commits into clear, customer-friendly release notes.
+
 - **Job Description Versioning System**: Comprehensive feature specification enabling version control, comparison, and historical tracking of job descriptions. Users can now maintain audit trails and rollback to previous versions when needed.
 
 - **Credit & Subscription Management**: Complete specification for managing subscription plans, credit allocation, usage tracking, and billing cycles. Supports flexible subscription models and credit-based pricing.
@@ -18,6 +22,8 @@ All notable changes to the AI-Talent-Analyst-System-Documentation project are do
 
 ### 🔧 Improvements & Enhancements
 
+- **Specification Skills Infrastructure**: Created reusable skills system for generating and updating feature specifications with bundled reference libraries for acceptance scenarios, requirement patterns, and success criteria best practices.
+
 - **Enhanced Authorization Management**: Improved user authorization system with comprehensive validation, group assignment logging, and clearer role-based access control enforcement.
 
 - **Clarified Authorization Groups & Permissions**: Refined user stories and acceptance criteria for authorization system with better role definitions and enhanced clarity on access controls.
@@ -27,6 +33,8 @@ All notable changes to the AI-Talent-Analyst-System-Documentation project are do
 - **User Story Numbering**: Corrected user story numbering in SaaS Admin Portal specifications for better organization and clarity.
 
 ### 📚 Documentation
+
+- **Skills Documentation**: Created comprehensive guidance for spec-generator and changelog-generator skills with core rules, workflows, and bundled reference libraries.
 
 - **Template System**: Established standardized specification template (`spec-template.md`) for consistent feature documentation across all feature areas.
 
@@ -70,10 +78,42 @@ The documentation covers a comprehensive **AI-powered HR talent management platf
 
 ---
 
+## Available Skills
+
+The project includes reusable skills for common documentation and specification tasks:
+
+### Spec Generator Skill (`.github/skills/spec-generator/`)
+
+Generate structured feature specifications with:
+
+- Prioritized user stories (P1/P2/P3)
+- Given-When-Then acceptance scenarios
+- Functional requirements
+- Success criteria
+
+**Reference Libraries:**
+
+- `acceptance-scenarios.md` - 40+ tested Given-When-Then patterns
+- `requirements-patterns.md` - 60+ functional requirement templates
+- `success-criteria.md` - Comprehensive metrics and patterns
+
+### Changelog Generator Skill (`.github/skills/changelog-generator/`)
+
+Create user-friendly changelogs by:
+
+- Scanning git commit history
+- Categorizing changes automatically
+- Translating technical commits to customer language
+- Formatting professionally
+
+---
+
 ## How to Navigate
 
 - **For Implementation**: Start with feature specifications in numbered folders (001-009)
 - **For Architecture**: See `SYSTEM_FLOW_SUMMARY.md` for conceptual flows
+- **For Specifications**: Use `.github/skills/spec-generator/` to create or update specs
+- **For Changelogs**: Use `.github/skills/changelog-generator/` to generate release notes
 - **For Template**: Reference `Template/spec-template.md` for specification structure
 - **For Guidelines**: Check copilot-instructions.md for project conventions and best practices
 
@@ -87,3 +127,4 @@ When adding new features or updates:
 2. Use feature branch naming: `###-feature-name` (e.g., `001-ai-hr-interview-system`)
 3. Update this changelog with user-friendly descriptions
 4. Ensure all user stories follow Given-When-Then acceptance criteria format
+5. Leverage spec-generator skill to maintain specification quality and consistency
