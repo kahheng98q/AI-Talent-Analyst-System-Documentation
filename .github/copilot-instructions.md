@@ -111,6 +111,17 @@ A: Feature 003 notes this as a future enhancement. Start with simple updates; ad
 **Q: How does Feature 001 AI integration work?**  
 A: Third-party API calls (OpenAI/Gemini) for: (1) question generation from job description, (2) resume scoring against JD, (3) competency-based scoring of interview responses.
 
+## Task Breakdown Generation
+
+Use the **task-breakdown-generator** skill to convert specification documents into structured task lists:
+
+1. Read the feature spec (e.g., `001-ai-hr-interview-system/spec.md`)
+2. Generate a `TASK_BREAKDOWN.md` file organized by implementation area (Frontend, Backend, API, etc.)
+3. Each main task represents a feature module with subtasks for specific implementation items
+4. Include descriptions, acceptance criteria, dependencies, and spec references for traceability
+
+Example usage: "Generate task breakdown for Feature 001" → produces `001-ai-hr-interview-system/TASK_BREAKDOWN.md`
+
 ## Git & Documentation Maintenance
 
 - Keep this file updated when architecture patterns change or new conventions emerge
