@@ -34,8 +34,7 @@ Organize tasks into logical categories based on the work:
 **Standard Categories:**
 
 - **Frontend** - UI components, pages, forms, user interactions
-- **Backend** - Business logic, data processing, domain models
-- **API** - REST/GraphQL endpoints, request/response handling
+- **Backend** - Business logic, data processing, domain models, API endpoints (REST/GraphQL), request/response handling
 - **Database** - Schema design, migrations, indexes
 - **Authentication/Authorization** - User management, permissions, RBAC
 - **Integration** - Third-party services, external APIs
@@ -44,6 +43,8 @@ Organize tasks into logical categories based on the work:
 - **Documentation** - API docs, user guides, deployment guides
 
 **Custom Categories**: Add domain-specific areas as needed (e.g., "AI Model Integration", "Report Generation", "Audit Logging")
+
+**Note**: API endpoints are organized under Backend as they represent the backend's interface layer.
 
 ### 3. Create Task Hierarchy
 
@@ -64,6 +65,32 @@ Organize tasks into logical categories based on the work:
 - Use when: A subtask is complex enough to warrant further breakdown (> 1 day of work)
 - Improves clarity by explaining what specific work items are included in abstract subtasks
 
+### 3.1. Add Cross-Area Linkages
+
+**Purpose**: Make the documentation easier to navigate by explicitly showing dependencies and relationships between areas.
+
+**Linkage Types**:
+
+1. **Frontend → Backend**: Reference which Backend API endpoints/methods the Frontend depends on
+   - Example: "Depends on Backend Task 2.1 (GET /api/candidates endpoint)"
+   - Example: "Calls CandidateService.createCandidate() method from Backend Task 2.2"
+
+2. **Backend → Database**: Reference which database tables/migrations must exist
+   - Example: "Requires Database Task 1.1 (candidates table) to be completed"
+
+3. **Testing → Frontend/Backend**: Reference which tasks the test is validating
+   - Example: "Tests Frontend Task 1.1 (Candidate List View) and Backend Task 2.1 (GET /api/candidates)"
+
+4. **Backend API → Backend Service**: Reference which service layer methods the API calls
+   - Example: "API endpoint delegates to CandidateService.updateStatus() from Backend Task 2.3"
+
+**How to Document Linkages**:
+
+- Add a **"Depends On"** or **"Uses"** field in subtask descriptions
+- Add a **"Tested By"** field referencing which test tasks validate this functionality
+- Add a **"Called By"** field in Backend tasks showing which Frontend/API tasks consume them
+- Use task numbers for easy cross-referencing (e.g., "Frontend 1.2", "Backend 2.3", "Testing 1.1")
+
 ### 4. Write Task Descriptions
 
 For each task and subtask, include:
@@ -71,7 +98,10 @@ For each task and subtask, include:
 - **What**: Clear description of the work
 - **Why**: Business value or technical necessity (reference spec user story/requirement)
 - **Scope**: Key components, files, or areas affected
-- **Dependencies**: Other tasks that must complete first (if any)
+- **Depends On**: Other tasks that must complete first (cross-area references with task numbers)
+- **Uses**: Which Backend APIs/methods this task calls (for Frontend tasks)
+- **Called By**: Which Frontend/API tasks consume this (for Backend tasks)
+- **Tested By**: Which test tasks validate this functionality
 - **Acceptance**: Brief success criteria (derived from spec Given-When-Then scenarios)
 
 ## Output Format
@@ -104,12 +134,16 @@ Generate a markdown file with this structure:
 #### Subtask 1.1: [Specific UI element or page]
 
 - **Description**: [Detailed description of work]
+- **Uses**: Backend Task [X.Y] - [API endpoint or method name]
+- **Tested By**: Testing Task [Z.W]
 - **Acceptance**: [Success criteria]
 - **Files**: [Key files to create/modify]
 
 #### Subtask 1.2: [Another specific element]
 
 - **Description**: [Detailed description]
+- **Uses**: Backend Task [X.Y] - [API endpoint or method name]
+- **Tested By**: Testing Task [Z.W]
 - **Acceptance**: [Success criteria]
 - **Files**: [Key files]
 
@@ -127,11 +161,23 @@ Generate a markdown file with this structure:
 
 **Requirement Reference**: [Functional requirement from spec]
 
-#### Subtask 1.1: [Specific logic or feature]
+#### Subtask 1.1: [API Endpoint - HTTP Method /api/path]
 
-- **Description**: [Details]
+- **Description**: [Endpoint purpose and functionality]
+- **Request**: [Request body/params schema]
+- **Response**: [Response schema]
+- **Service Method**: Calls [ServiceName.methodName()] from Backend Task [X.Y]
+- **Called By**: Frontend Task [A.B]
+- **Tested By**: Testing Task [Z.W]
+- **Acceptance**: [API success criteria]
+
+#### Subtask 1.2: [Service Layer - Method Name]
+
+- **Description**: [Business logic details]
+- **Depends On**: Database Task [X.Y] - [Table name]
+- **Called By**: Backend Task [A.B] - [API endpoint], Frontend (via API)
+- **Tested By**: Testing Task [Z.W]
 - **Acceptance**: [Criteria]
-- **Dependencies**: [If any]
 
 ##### Sub-Subtask 1.1.1: [Granular implementation detail]
 
@@ -148,23 +194,6 @@ Generate a markdown file with this structure:
 
 ---
 
-## API
-
-### Main Task 1: [Endpoint Group]
-
-**Description**: [Purpose of these endpoints]
-
-#### Subtask 1.1: [Specific endpoint]
-
-- **Description**: POST /api/candidates - Create new candidate
-- **Request Body**: [Schema reference]
-- **Response**: [Schema reference]
-- **Acceptance**: Returns 201 with candidate ID on success
-
-...
-
----
-
 ## Database
 
 ### Main Task 1: Schema Design
@@ -174,9 +203,26 @@ Generate a markdown file with this structure:
 - **Description**: Design and create migration for [entity] table
 - **Columns**: [Key columns and relationships]
 - **Indexes**: [Performance indexes]
+- **Used By**: Backend Task [X.Y] - [Service/method name]
 - **Acceptance**: Migration runs successfully in dev/staging
 
 ...
+
+---
+
+## Testing
+
+### Main Task 1: [Test Suite Name]
+
+**Description**: [What this test suite covers]
+
+#### Subtask 1.1: [Specific test case or test file]
+
+- **Description**: [What is being tested]
+- **Tests**: Frontend Task [X.Y], Backend Task [A.B]
+- **Test Type**: [Unit/Integration/E2E]
+- **Scenarios**: [Key test scenarios from spec]
+- **Acceptance**: All tests pass, coverage > [X]%
 
 ---
 
@@ -262,17 +308,30 @@ Each description should answer:
 - **Why** it's needed (link to spec requirement)
 - **How** it fits into the larger system
 - **When** it should be done (dependency order)
+- **Who** consumes/depends on this (cross-references)
 
 For sub-subtasks, add:
 
 - **Specific Implementation Detail**: What exactly is this item doing
 - **Expected Behavior**: How it should work or integrate
 
+### Cross-Referencing
+
+- **Use task numbers consistently**: Frontend 1.2, Backend 2.3, Database 1.1, Testing 3.1
+- **Be explicit about dependencies**: Don't say "depends on API", say "depends on Backend Task 2.1 (GET /api/candidates endpoint)"
+- **Show bidirectional links**:
+  - Frontend tasks list which Backend tasks they use
+  - Backend tasks list which Frontend tasks call them
+  - Testing tasks list which Frontend/Backend tasks they validate
+- **Update links when tasks change**: If you renumber tasks, update all cross-references
+
 ### Traceability
 
 - Reference spec sections explicitly (e.g., "User Story 1.2", "Requirement FR-003")
 - Link acceptance criteria back to spec Given-When-Then scenarios
 - Preserve spec terminology (entity names, field names, status values)
+- Cross-reference related tasks using task numbers (e.g., "Depends On: Backend 2.1", "Called By: Frontend 1.3")
+- Include "Tested By" references in implementation tasks to link to test coverage
 
 ## Example Invocations
 
@@ -282,20 +341,22 @@ For sub-subtasks, add:
 
 1. Read `001-ai-hr-interview-system/spec.md`
 2. Extract user stories (P1/P2/P3), requirements, entities
-3. Categorize into Frontend, Backend, API, Database, AI Integration, Testing
+3. Categorize into Frontend, Backend (including APIs), Database, AI Integration, Testing
 4. Create main tasks (Interview Module, Resume Upload, AI Scoring Engine, etc.)
-5. Break each into subtasks with descriptions
-6. Generate `001-ai-hr-interview-system/TASK_BREAKDOWN.md`
+5. Break each into subtasks with descriptions and cross-references
+6. Add "Uses", "Called By", "Tested By" fields to show relationships
+7. Generate `001-ai-hr-interview-system/TASK_BREAKDOWN.md`
 
 **User**: "Break down the SaaS Admin Portal spec into implementation tasks"
 
 **Process**:
 
 1. Read `002-saas-admin-portal-company-management/spec.md`
-2. Identify areas: Frontend (admin UI), Backend (company management), API (CRUD endpoints), Auth (God Mode)
-3. Create tasks organized by area
-4. Reference spec requirements and user stories in descriptions
-5. Generate `002-saas-admin-portal-company-management/TASK_BREAKDOWN.md`
+2. Identify areas: Frontend (admin UI), Backend (company management, API endpoints), Database, Auth (God Mode), Testing
+3. Create tasks organized by area with cross-references
+4. Add linkages: Frontend UI → Backend APIs → Database tables → Testing
+5. Reference spec requirements and user stories in descriptions
+6. Generate `002-saas-admin-portal-company-management/TASK_BREAKDOWN.md`
 
 ## Tips
 
@@ -304,6 +365,9 @@ For sub-subtasks, add:
 - **Include edge cases** - If spec mentions validation rules or error handling, create subtasks for them
 - **Think deployment** - Include tasks for migrations, config, environment variables
 - **Consider testing** - Add testing subtasks for critical paths (unit, integration, E2E)
+- **Add cross-references early** - As you create Backend APIs, note which Frontend tasks will call them
+- **Number tasks sequentially** - Use consistent numbering (1.1, 1.2, 2.1) for easy cross-referencing
+- **Link bidirectionally** - If Frontend 1.2 uses Backend 2.3, note this in both tasks
 - **Update as needed** - Task breakdowns are living documents; update when specs change
 
 ## Anti-Patterns to Avoid
@@ -320,7 +384,13 @@ For sub-subtasks, add:
 - Register NotificationFlagReset job (daily at midnight)
 
 ❌ **Missing dependencies**: Tasks that can't be done without others being complete first  
-✅ **Clear dependencies**: "Depends on: Database schema migration for candidates table"
+✅ **Clear dependencies**: "Depends On: Database Task 1.1 (candidates table migration)"
+
+❌ **No cross-references**: Frontend task doesn't mention which Backend API it calls  
+✅ **Clear linkage**: "Uses: Backend Task 2.1 (GET /api/candidates endpoint)"
+
+❌ **One-way references**: Backend task doesn't show who uses it  
+✅ **Bidirectional links**: "Called By: Frontend Task 1.2 (Candidate List View)"
 
 ❌ **Too granular**: "Write line 42 of controller.py"  
 ✅ **Right size**: "Implement candidate CRUD controller with validation"

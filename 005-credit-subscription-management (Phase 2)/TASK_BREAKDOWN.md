@@ -2,6 +2,7 @@
 
 **Source**: [005-credit-subscription-management/spec.md](spec.md)  
 **Generated**: January 28, 2026  
+**Updated**: February 1, 2026 (Added cross-area linkages and reorganized API under Backend)  
 **Status**: Planning
 
 ---
@@ -21,6 +22,19 @@ Feature 005 implements a comprehensive subscription and billing system with thre
 - Automated quota and balance alerts (80%, 100%, low balance)
 - Mid-year subscription upgrades/downgrades with prorated charges
 
+**Cross-Referencing System**:
+
+This task breakdown uses explicit cross-area linkages to show dependencies and relationships:
+
+- **Frontend tasks** include **"Uses"** field referencing Backend API endpoints/services they call
+- **Backend tasks** include **"Called By"** field showing which Frontend/other Backend tasks consume them
+- **Backend API endpoints** include **"Service Method"** field showing which service layer methods they delegate to
+- **Database tasks** include **"Used By"** field showing which Backend services depend on them
+- **All implementation tasks** include **"Tested By"** field referencing test tasks that validate them
+- **Task numbering**: Use format "Frontend 1.1", "Backend 2.3", "Database 1.2", "Testing 3.1" for cross-references
+
+**Note**: API endpoints are organized under Backend as they represent the backend's interface layer.
+
 ---
 
 ## Frontend
@@ -34,6 +48,8 @@ Feature 005 implements a comprehensive subscription and billing system with thre
 #### Subtask 1.1: Create Subscription Status Card Component
 
 - **Description**: Build a card component displaying subscription tier (Gold Fish/Dolphin/Whale), status (Active/Suspended/Cancelled), annual allocation, interviews used, remaining, reserved quota, available quota, account balance, and anniversary date
+- **Uses**: Backend Task 1.8 (GET /api/subscriptions/status endpoint)
+- **Tested By**: Testing Task 3.1 (Subscription Dashboard E2E Test)
 - **Acceptance**: Card displays all fields accurately, updates in real-time when quota changes, shows color-coded status badges (green=active, yellow=warning, red=suspended)
 - **Files**: `components/SubscriptionStatusCard.jsx`, `styles/subscription-status.css`
 - **User Story**: P1 User Story 1, Scenario 1
@@ -41,6 +57,8 @@ Feature 005 implements a comprehensive subscription and billing system with thre
 #### Subtask 1.2: Implement Low Quota Warning Banner
 
 - **Description**: Create a warning banner component that appears at top of dashboard when quota reaches 80% (yellow) or 100% (red) usage thresholds
+- **Uses**: Backend Task 1.1 (SubscriptionService.getSubscriptionStatus method)
+- **Tested By**: Testing Task 3.1 (Subscription Dashboard E2E Test)
 - **Acceptance**: Banner appears automatically when threshold crossed, includes remaining count, call-to-action buttons ([Upgrade Now], [Purchase Interviews]), dismissible but reappears on next login
 - **Files**: `components/QuotaWarningBanner.jsx`
 - **User Story**: P1 User Story 1, Scenarios 3-4
@@ -48,6 +66,8 @@ Feature 005 implements a comprehensive subscription and billing system with thre
 #### Subtask 1.3: Implement Low Balance Warning Banner
 
 - **Description**: Create a warning banner that appears when account balance drops below RM50 threshold, blocking new invitations if balance insufficient
+- **Uses**: Backend Task 1.6 (AccountBalanceService methods)
+- **Tested By**: Testing Task 3.1 (Subscription Dashboard E2E Test)
 - **Acceptance**: Banner displays current balance, minimum required amount, includes [Top Up Now] button, shows real-time balance updates
 - **Files**: `components/BalanceWarningBanner.jsx`
 - **User Story**: P1 User Story 1, Scenario 5
@@ -77,6 +97,8 @@ Feature 005 implements a comprehensive subscription and billing system with thre
 #### Subtask 2.1: Create Line Graph for Usage Over Time
 
 - **Description**: Implement line graph using Chart.js/Recharts showing interview completions over time with toggleable daily/monthly views and date range picker
+- **Uses**: Backend Task 5.1 (GET /api/usage/timeseries endpoint)
+- **Tested By**: Testing Task 3.2 (Usage Analytics E2E Test)
 - **Acceptance**: Chart renders with time on X-axis, interview count on Y-axis, supports toggle between daily (last 30 days) and monthly (last 12 months) views, date range picker filters data accurately
 - **Files**: `components/UsageLineChart.jsx`, `utils/chartConfig.js`
 - **User Story**: P1 User Story 2, Scenarios 1-2
@@ -84,6 +106,8 @@ Feature 005 implements a comprehensive subscription and billing system with thre
 #### Subtask 2.2: Create Pie Chart for Usage Breakdown by Status
 
 - **Description**: Build pie chart showing interview distribution by status (Completed, Pending, Cancelled) with percentages and legend
+- **Uses**: Backend Task 5.2 (GET /api/usage/breakdown endpoint)
+- **Tested By**: Testing Task 3.2 (Usage Analytics E2E Test)
 - **Acceptance**: Pie chart displays correct percentages, legend shows color coding, tooltips show absolute counts, updates based on date range filter
 - **Files**: `components/UsageBreakdownPieChart.jsx`
 - **User Story**: P1 User Story 2, Scenario 3
@@ -266,6 +290,8 @@ Feature 005 implements a comprehensive subscription and billing system with thre
 #### Subtask 1.1: Create Subscription Service Class
 
 - **Description**: Build service class with methods for subscription CRUD operations, quota calculations, status checks, anniversary date calculations
+- **Called By**: Backend Task 1.8 (GET /api/subscriptions/status endpoint), Frontend Task 1.1 (Subscription Status Card)
+- **Tested By**: Testing Task 1.1 (Subscription Service Unit Tests)
 - **Acceptance**: Service provides methods: `getSubscriptionStatus()`, `calculateRemainingQuota()`, `checkQuotaAvailability()`, `getAnniversaryDate()`, all methods return accurate data based on CompanySubscription entity
 - **Files**: `services/SubscriptionService.js`, `models/CompanySubscription.js`
 - **Requirement**: FR-001
@@ -273,10 +299,12 @@ Feature 005 implements a comprehensive subscription and billing system with thre
 #### Subtask 1.2: Implement Quota Reservation Logic
 
 - **Description**: Create method to reserve interview quota when HR sends invitation, checking quota availability (plan + individual) and balance sufficiency
+- **Depends On**: Database Task 1.2 (CompanySubscription table), Database Task 1.3 (QuotaReservation table)
+- **Called By**: Backend Task 1.9 (POST /api/quota/reserve endpoint)
+- **Tested By**: Testing Task 1.2 (Quota Reservation Unit Tests), Testing Task 2.2 (Quota Management API Integration Tests)
 - **Acceptance**: Method `reserveInterviewQuota(companyId, estimatedCost)` creates QuotaReservation record, decrements available quota, validates balance ≥ estimatedCost, returns reservation object or error
 - **Files**: `services/QuotaReservationService.js`, `models/QuotaReservation.js`
 - **Requirement**: FR-027, FR-030
-- **Dependencies**: CompanySubscription entity must exist
 
 #### Subtask 1.3: Implement Quota Settlement on Interview Completion
 
@@ -312,10 +340,34 @@ Feature 005 implements a comprehensive subscription and billing system with thre
 #### Subtask 1.7: Implement Quota Exhaustion Blocking
 
 - **Description**: Create validation method to check quota availability and balance sufficiency before allowing invitation send, return structured error with options
+- **Called By**: Backend Task 1.12 (GET /api/quota/validate-invitation endpoint), Feature 001 Interview Module
+- **Tested By**: Testing Task 1.2 (Quota Reservation Unit Tests), Testing Task 3.5 (Quota Exhaustion E2E Test)
 - **Acceptance**: Method `validateInvitationEligibility(companyId)` checks: (1) active subscription exists, (2) available_quota > 0, (3) balance ≥ estimatedCost, returns error object with failure reasons and suggested actions ([Upgrade], [Purchase], [Top Up])
 - **Files**: `services/SubscriptionService.js`
 - **Requirement**: FR-000, FR-000a, FR-023, FR-032, FR-033
 - **User Story**: P1 User Story 5, Scenario 1
+
+#### Subtask 1.8: GET /api/subscriptions/status
+
+- **Description**: API endpoint to retrieve current subscription status for authenticated company with quota, balance, and anniversary details
+- **Service Method**: Calls SubscriptionService.getSubscriptionStatus() from Backend Task 1.1
+- **Called By**: Frontend Task 1.1 (Subscription Status Card)
+- **Tested By**: Testing Task 2.1 (Subscription API Integration Tests), Testing Task 3.1 (Subscription Dashboard E2E Test)
+- **Request**: Headers: Authorization (JWT with company_id)
+- **Response**: `{ status: "active", tier: "Gold Fish", annual_allocation: 300, interviews_used: 12, remaining: 288, reserved: 5, available: 283, account_balance: 500, anniversary_date: "2026-12-01" }`
+- **Acceptance**: Returns 200 with subscription details, 404 if no subscription exists, enforces company_id from JWT
+- **User Story**: P1 User Story 1, Scenario 1
+
+#### Subtask 1.9: POST /api/quota/reserve
+
+- **Description**: API endpoint to reserve interview quota when HR sends invitation
+- **Service Method**: Calls QuotaReservationService.reserveInterviewQuota() from Backend Task 1.2
+- **Called By**: Feature 001 Interview Module (on candidate invitation send)
+- **Tested By**: Testing Task 2.2 (Quota Management API Integration Tests)
+- **Request**: `{ estimated_cost: 12, interview_id: 456 }`
+- **Response**: `{ success: true, reservation_id: 789, reserved_from: "plan_quota", expires_at: "2026-01-31T00:00:00Z" }`
+- **Acceptance**: Returns 201 on success with reservation details, 400 if insufficient quota or balance, creates QuotaReservation record with status='active'
+- **Requirement**: FR-027, FR-030
 
 ---
 
@@ -543,273 +595,6 @@ Feature 005 implements a comprehensive subscription and billing system with thre
 
 ---
 
-## API
-
-### Main Task 1: Subscription Management Endpoints
-
-**Description**: Implement REST API endpoints for subscription CRUD operations, status retrieval, and plan changes.
-
-**Requirement Reference**: FR-001, FR-007, FR-013, FR-014, FR-015
-
-#### Subtask 1.1: GET /api/subscriptions/status
-
-- **Description**: Retrieve current subscription status for authenticated company with quota, balance, and anniversary details
-- **Request**: Headers: Authorization (JWT with company_id)
-- **Response**: `{ status: "active", tier: "Gold Fish", annual_allocation: 300, interviews_used: 12, remaining: 288, reserved: 5, available: 283, account_balance: 500, anniversary_date: "2026-12-01" }`
-- **Acceptance**: Returns 200 with subscription details, 404 if no subscription exists, enforces company_id from JWT
-- **User Story**: P1 User Story 1, Scenario 1
-
-#### Subtask 1.2: GET /api/subscriptions/plans
-
-- **Description**: List all available subscription plans with pricing and features
-- **Request**: None (public endpoint)
-- **Response**: `[{ id: 1, name: "Gold Fish", annual_price: 3600, annual_quota: 300, cost_per_interview: 12, features: [...] }, ...]`
-- **Acceptance**: Returns 200 with array of 3 plans (Gold Fish, Dolphin, Whale)
-- **Requirement**: FR-007
-
-#### Subtask 1.3: POST /api/subscriptions/upgrade
-
-- **Description**: Process subscription upgrade to higher tier with prorated charge calculation
-- **Request**: `{ new_plan_id: 2 }` (Dolphin or Whale)
-- **Response**: `{ success: true, prorated_charge: 4800, new_quota: 800, transaction_id: 123 }`
-- **Acceptance**: Returns 200 on success, validates new_plan_id > current_plan_id, calculates prorated charge, updates subscription, returns 400 if already on highest tier or insufficient balance
-- **Requirement**: FR-013
-
-#### Subtask 1.4: POST /api/subscriptions/downgrade
-
-- **Description**: Process subscription downgrade to lower tier with prorated refund
-- **Request**: `{ new_plan_id: 1 }` (Gold Fish or Dolphin)
-- **Response**: `{ success: true, prorated_refund: 2400, new_quota: 300, current_usage: 280, warning: "Current usage near new limit" }`
-- **Acceptance**: Returns 200 on success, validates new_plan_id < current_plan_id, calculates refund, returns warning if usage > new quota, returns 400 if already on lowest tier
-- **Requirement**: FR-014
-
-#### Subtask 1.5: POST /api/subscriptions/cancel
-
-- **Description**: Process subscription cancellation with prorated refund and service end date
-- **Request**: `{ cancellation_reason: "Budget constraints" }`
-- **Response**: `{ success: true, prorated_refund: 1200, service_end_date: "2026-12-01" }`
-- **Acceptance**: Returns 200 on success, calculates refund for unused period, sets status='cancelled', service continues until anniversary date
-- **Requirement**: FR-015
-
----
-
-### Main Task 2: Quota Management Endpoints
-
-**Description**: Implement API endpoints for quota reservation, consumption tracking, and validation.
-
-**Requirement Reference**: FR-027, FR-028, FR-029, FR-030
-
-#### Subtask 2.1: POST /api/quota/reserve
-
-- **Description**: Reserve interview quota when HR sends invitation
-- **Request**: `{ estimated_cost: 12, interview_id: 456 }`
-- **Response**: `{ success: true, reservation_id: 789, reserved_from: "plan_quota", expires_at: "2026-01-31T00:00:00Z" }`
-- **Acceptance**: Returns 201 on success with reservation details, 400 if insufficient quota or balance, creates QuotaReservation record with status='active'
-- **Requirement**: FR-027, FR-030
-
-#### Subtask 2.2: POST /api/quota/settle
-
-- **Description**: Convert reserved quota to consumed quota when interview completes
-- **Request**: `{ reservation_id: 789, actual_cost: 12 }`
-- **Response**: `{ success: true, quota_source: "plan_quota", balance_deducted: 12, new_balance: 488 }`
-- **Acceptance**: Returns 200 on success, updates reservation status='consumed', decrements quota, deducts balance, creates InterviewCompletion + BillingTransaction, returns 404 if reservation not found
-- **Requirement**: FR-028
-
-#### Subtask 2.3: POST /api/quota/release
-
-- **Description**: Release reserved quota when invitation expires or is cancelled
-- **Request**: `{ reservation_id: 789, reason: "invitation_expired" }`
-- **Response**: `{ success: true, quota_released: 1, reason: "invitation_expired" }`
-- **Acceptance**: Returns 200 on success, updates reservation status='released', increments available quota, no balance change, returns 404 if reservation not found
-- **Requirement**: FR-029
-
-#### Subtask 2.4: GET /api/quota/validate-invitation
-
-- **Description**: Validate if company can send new invitation (checks active plan, quota, balance)
-- **Request**: Query params: `estimated_cost=12`
-- **Response**: `{ eligible: true, available_quota: 283, available_balance: 500 }` OR `{ eligible: false, reason: "insufficient_quota", options: ["upgrade", "purchase", "topup"] }`
-- **Acceptance**: Returns 200 with eligibility status, if ineligible returns structured error with options, checks: active subscription, available_quota > 0, balance ≥ estimated_cost
-- **Requirement**: FR-000, FR-000a, FR-023, FR-032, FR-033
-
----
-
-### Main Task 3: Individual Interview Purchase Endpoints
-
-**Description**: Implement API endpoints for individual interview purchases and payment processing.
-
-**Requirement Reference**: FR-008, FR-016, FR-017, FR-025
-
-#### Subtask 3.1: POST /api/purchases/create
-
-- **Description**: Create individual interview purchase request with payment instructions
-- **Request**: `{ quantity: 10 }`
-- **Response**: `{ purchase_id: 123, quantity: 10, total_cost: 150, reference_code: "COMP-5-INT-1643347200", payment_instructions: {...} }`
-- **Acceptance**: Returns 201 with purchase details and payment instructions, validates quantity > 0 and ≤ 50, checks balance sufficiency, creates PurchaseRequest with status='pending', generates unique reference code
-- **Requirement**: FR-008, FR-016, FR-025
-- **User Story**: P1 User Story 5, Scenario 2
-
-#### Subtask 3.2: POST /api/purchases/:id/receipt
-
-- **Description**: Upload payment receipt for purchase request (used by customer)
-- **Request**: Multipart form data with file upload
-- **Response**: `{ success: true, receipt_url: "https://storage/receipts/123.pdf" }`
-- **Acceptance**: Returns 200 on successful upload, validates file type (PDF, JPG, PNG), stores receipt in cloud storage, updates PurchaseRequest.payment_receipt_url
-- **Requirement**: FR-016
-
-#### Subtask 3.3: POST /api/admin/purchases/:id/approve
-
-- **Description**: Approve purchase request and credit interviews (admin only)
-- **Request**: `{ notes: "Payment verified via bank transfer" }`
-- **Response**: `{ success: true, interviews_credited: 10, new_balance: 350 }`
-- **Acceptance**: Returns 200 on success, validates admin permissions, updates purchase status='completed', credits individual_interviews_purchased, deducts from balance, creates BillingTransaction, sends confirmation email
-- **Requirement**: FR-017
-- **User Story**: P1 User Story 5, Scenario 3
-
-#### Subtask 3.4: GET /api/purchases/history
-
-- **Description**: Retrieve purchase history for authenticated company with pagination
-- **Request**: Query params: `page=1, limit=20`
-- **Response**: `{ purchases: [{id, quantity, total_cost, status, created_at}, ...], total: 45, page: 1 }`
-- **Acceptance**: Returns 200 with paginated purchase records, sorted by created_at desc, enforces company_id from JWT
-
----
-
-### Main Task 4: Billing & Invoice Endpoints
-
-**Description**: Implement API endpoints for billing history retrieval, invoice generation, and payment confirmation.
-
-**Requirement Reference**: FR-004, FR-005, FR-006, FR-018
-
-#### Subtask 4.1: GET /api/billing/history
-
-- **Description**: Retrieve billing transaction history with filtering and pagination
-- **Request**: Query params: `start_date=2025-10-01, end_date=2025-12-31, transaction_type=subscription, page=1, limit=20`
-- **Response**: `{ transactions: [{invoice_number, date, description, amount, type, status, invoice_url}, ...], total: 120, page: 1 }`
-- **Acceptance**: Returns 200 with paginated billing records, supports date range filter, transaction type filter, sorted by date desc, enforces company_id from JWT
-- **Requirement**: FR-004, FR-006
-- **User Story**: P1 User Story 3, Scenarios 1-2
-
-#### Subtask 4.2: GET /api/billing/invoices/:id
-
-- **Description**: Retrieve invoice details by ID
-- **Request**: Path param: invoice_id
-- **Response**: `{ invoice_number, date, company_name, items: [{description, quantity, unit_price, total}], subtotal, total, payment_method, status }`
-- **Acceptance**: Returns 200 with invoice details, 404 if not found, 403 if invoice belongs to different company
-- **Requirement**: FR-005
-
-#### Subtask 4.3: GET /api/billing/invoices/:id/download
-
-- **Description**: Generate and download PDF invoice
-- **Request**: Path param: invoice_id
-- **Response**: PDF file download with Content-Type: application/pdf
-- **Acceptance**: Returns 200 with PDF file, generates PDF on-demand if not cached, stores generated PDF URL in BillingTransaction.invoice_url for future requests, returns 404 if invoice not found
-- **Requirement**: FR-005
-- **User Story**: P1 User Story 3, Scenario 3
-
-#### Subtask 4.4: POST /api/billing/send-confirmation
-
-- **Description**: Send email confirmation for completed payment (triggered by admin approval)
-- **Request**: `{ transaction_id: 123 }`
-- **Response**: `{ success: true, email_sent_to: ["admin1@company.com", "admin2@company.com"] }`
-- **Acceptance**: Returns 200 on success, sends email to all company admins, includes purchase/top-up details, new quota/balance, links to invoice PDF
-- **Requirement**: FR-018
-
----
-
-### Main Task 5: Usage Analytics Endpoints
-
-**Description**: Implement API endpoints for usage data retrieval and chart visualization data.
-
-**User Story Reference**: P1 User Story 2 - View Interview Usage History & Analytics
-
-#### Subtask 5.1: GET /api/usage/timeseries
-
-- **Description**: Retrieve interview usage time series data for line graph
-- **Request**: Query params: `start_date=2025-12-01, end_date=2025-12-13, granularity=daily`
-- **Response**: `{ data: [{date: "2025-12-01", count: 5}, {date: "2025-12-02", count: 3}, ...], granularity: "daily" }`
-- **Acceptance**: Returns 200 with time series array, supports daily/monthly granularity, filters by date range, enforces company_id from JWT
-- **User Story**: P1 User Story 2, Scenarios 1-2
-
-#### Subtask 5.2: GET /api/usage/breakdown
-
-- **Description**: Retrieve interview usage breakdown by status for pie chart
-- **Request**: Query params: `start_date=2025-12-01, end_date=2025-12-31`
-- **Response**: `{ completed: {count: 50, percentage: 86.2}, pending: {count: 8, percentage: 13.8}, cancelled: {count: 2, percentage: 3.4} }`
-- **Acceptance**: Returns 200 with breakdown object, percentages sum to ≈100%, filters by date range
-- **User Story**: P1 User Story 2, Scenario 3
-
-#### Subtask 5.3: GET /api/usage/estimate-depletion
-
-- **Description**: Calculate and return estimated quota depletion date
-- **Request**: None
-- **Response**: `{ estimated_date: "2026-06-15", days_remaining: 138, avg_daily_usage: 2.1 }`
-- **Acceptance**: Returns 200 with estimation, uses rolling 7-day average, returns null if usage rate = 0, updates calculation daily
-- **Requirement**: FR-022
-
----
-
-### Main Task 6: Account Balance Endpoints
-
-**Description**: Implement API endpoints for balance top-up requests and balance inquiry.
-
-**Requirement Reference**: FR-031
-
-#### Subtask 6.1: POST /api/balance/topup
-
-- **Description**: Create balance top-up request with payment instructions
-- **Request**: `{ amount: 500 }`
-- **Response**: `{ topup_id: 456, amount: 500, reference_code: "COMP-5-BAL-1643347200", payment_instructions: {...} }`
-- **Acceptance**: Returns 201 with top-up details and payment instructions, validates amount ≥ RM50 (minimum), creates TopUpRequest with status='pending', generates unique reference code
-- **Requirement**: FR-031
-
-#### Subtask 6.2: POST /api/balance/topup/:id/receipt
-
-- **Description**: Upload payment receipt for top-up request
-- **Request**: Multipart form data with file upload
-- **Response**: `{ success: true, receipt_url: "https://storage/receipts/456.pdf" }`
-- **Acceptance**: Returns 200 on successful upload, validates file type, stores receipt, updates TopUpRequest.payment_receipt_url
-- **Requirement**: FR-031
-
-#### Subtask 6.3: POST /api/admin/balance/:id/approve
-
-- **Description**: Approve top-up request and credit balance (admin only)
-- **Request**: `{ notes: "Bank transfer verified" }`
-- **Response**: `{ success: true, amount_credited: 500, new_balance: 1000 }`
-- **Acceptance**: Returns 200 on success, validates admin permissions, updates top-up status='completed', credits account_balance_rmb, creates BillingTransaction (type: balance_topup), sends confirmation email
-- **Requirement**: FR-031
-
-#### Subtask 6.4: GET /api/balance/current
-
-- **Description**: Retrieve current account balance with breakdown (total, reserved, available)
-- **Request**: None
-- **Response**: `{ total_balance: 500, reserved_balance: 0, available_balance: 500 }`
-- **Acceptance**: Returns 200 with balance breakdown, enforces company_id from JWT
-
----
-
-### Main Task 7: Notification Endpoints
-
-**Description**: Implement API endpoints for in-app notification retrieval and acknowledgment.
-
-**User Story Reference**: P2 User Story 4 - Receive Interview Quota Alerts
-
-#### Subtask 7.1: GET /api/notifications/unread
-
-- **Description**: Retrieve unacknowledged in-app notifications for current user
-- **Request**: None
-- **Response**: `{ notifications: [{id, type: "quota_80_percent", message: "You have used 80% of interviews...", created_at}, ...] }`
-- **Acceptance**: Returns 200 with array of unacknowledged notifications, filters by company_id from JWT, sorted by created_at desc
-- **User Story**: P2 User Story 4, Scenario 2
-
-#### Subtask 7.2: POST /api/notifications/:id/acknowledge
-
-- **Description**: Mark notification as acknowledged/dismissed
-- **Request**: Path param: notification_id
-- **Response**: `{ success: true }`
-- **Acceptance**: Returns 200 on success, updates NotificationLog.acknowledged_at timestamp, 404 if notification not found
-
----
-
 ## Database
 
 ### Main Task 1: Core Subscription Schema Design
@@ -852,6 +637,8 @@ Feature 005 implements a comprehensive subscription and billing system with thre
   - `service_end_date` (DATE, nullable)
   - `created_at`, `updated_at` (TIMESTAMP)
 - **Indexes**: `idx_company_id` on company_id, `idx_status` on status, `idx_anniversary_date` on subscription_anniversary_date
+- **Used By**: Backend Task 1.1 (SubscriptionService), Backend Task 1.2 (QuotaReservationService), Backend Task 1.6 (AccountBalanceService)
+- **Tested By**: Testing Task 1.1 (Subscription Service Unit Tests)
 - **Acceptance**: Migration runs successfully, foreign key constraints enforced, unique constraint on company_id (one subscription per company)
 - **Requirement**: FR-001, FR-030
 
@@ -1634,12 +1421,20 @@ Feature 005 implements a comprehensive subscription and billing system with thre
 
 ## Task Summary
 
-- **Total Main Tasks**: 31
-- **Total Subtasks**: 141
+- **Total Main Tasks**: 24 (API tasks integrated into Backend)
+- **Total Subtasks**: 141+
 - **Priority Distribution**:
-  - P1 (MVP): 22 main tasks (Frontend dashboard, Backend quota/billing, API endpoints, Database schema)
-  - P2 (Enhancement): 6 main tasks (Notification system, Usage analytics advanced features)
-  - P3 (Nice-to-have): 3 main tasks (WebSocket notifications, Performance optimization)
+  - P1 (MVP): 18 main tasks (Frontend dashboard, Backend quota/billing with API endpoints, Database schema)
+  - P2 (Enhancement): 4 main tasks (Notification system, Usage analytics advanced features)
+  - P3 (Nice-to-have): 2 main tasks (WebSocket notifications, Performance optimization)
+
+**Cross-Referencing Notes**:
+
+- All Frontend tasks reference Backend APIs they depend on (Uses field)
+- All Backend service methods show which endpoints/Frontend call them (Called By field)
+- All Backend API endpoints integrated into Backend section (not separate)
+- All Database tables show which Backend services use them (Used By field)
+- All implementation tasks link to test tasks that validate them (Tested By field)
 
 ---
 
