@@ -12,7 +12,7 @@
 - Q: Should JD version creation happen automatically on every edit, or require explicit "save as version"? → A: Automatic version creation on any content change; simpler and safer for compliance.
 - Q: When does the JD version get locked for an interview session? → A: At the moment candidate opens the interview link and confirms email verification.
 - Q: Can HR "activate" a previous version for new candidates, or must they rollback? → A: Rollback creates a new version; explicit "Activate Previous" action is available as non-destructive alternative.
-- Q: How long are versions retained? → A: Indefinitely, aligning with existing data retention policy (manual deletion only by HR).
+- Q: How long are versions retained? → A: See FR-011 (indefinite retention; manual deletion only by HR).
 - Q: Should version history affect "Job Description Analysis" token tracking (Feature 005)? → A: Yes—allocate tokens to specific JD versions; support cost-per-version reporting.
 - Q: How does JD versioning interact with job status changes (open/filled/on-hold)? → A: Status and version are independent; both tracked separately in audit trails.
 
@@ -140,13 +140,11 @@ As an HR manager, I want to revert to a previous job description version if I ma
 ### Key Entities
 
 - **JobDescription** (existing table, modified):
-
   - `current_version_id` (FK to JobDescriptionVersion) — points to active version
   - `version_count` (INT) — cached count of total versions for quick queries
   - Existing fields: `job_id`, `company_id`, `title`, `status`, `created_at`, `created_by_id`, `is_deleted`
 
 - **JobDescriptionVersion** (new table):
-
   - `id` (PK, UUID)
   - `job_id` (FK to Job) — which job this version belongs to
   - `company_id` (FK to Company) — multi-tenant isolation
@@ -163,17 +161,14 @@ As an HR manager, I want to revert to a previous job description version if I ma
   - Soft delete: `is_deleted` (BOOL) — mark as deleted when job is deleted, but retain for audit
 
 - **InterviewSession** (existing table, modified):
-
   - `jd_version_id` (FK to JobDescriptionVersion, NOT NULL) — immutable reference to JD version used
   - `jd_locked_at` (TIMESTAMP) — when JD version was captured (same as session start time)
   - Existing fields: `interview_id`, `candidate_id`, `job_id`, `company_id`, `created_at`, etc.
 
 - **Candidate** (existing table, modified, via Feature 003):
-
   - No direct changes; versioning handled via interview session
 
 - **CandidateStatusHistory** (existing table, modified, Feature 003 integration):
-
   - `jd_version_id` (FK to JobDescriptionVersion, nullable) — which JD version was active when this status was assigned
   - Existing fields: `candidate_id`, `old_status`, `new_status`, `timestamp`, `modified_by_user_id`
 
@@ -200,11 +195,11 @@ As an HR manager, I want to revert to a previous job description version if I ma
 
 ### Assumptions
 
-- **Automatic Versioning**: Version is created on every content change, not on-demand by HR (simpler, safer).
-- **Indefinite Retention**: All versions retained indefinitely; no automatic purging (aligns with Feature 001 data retention).
+- **Automatic Versioning**: See FR-001 (automatic version creation on every content change).
+- **Indefinite Retention**: See FR-011 (retain all versions indefinitely; no automatic purging).
 - **Immutable Interview Sessions**: Once JD version is locked at interview session start, it cannot be changed (audit integrity).
 - **Last-Write-Wins**: Concurrent edits to same JD; second editor's version overwrites first, second editor notified of conflict.
-- **Rollback Creates New Version**: Reverting to a previous version does NOT destructively overwrite; instead creates a new version with restored content (audit trail safety).
+- **Rollback Creates New Version**: See FR-007 (rollback creates a new version; non-destructive).
 - **Multi-Tenant Isolation**: All queries filtered by `company_id`; no cross-company visibility of JD versions.
 - **Content Storage**: Small JDs (<100KB) stored inline in `JobDescriptionVersion.content`; large JDs use blob reference (S3 key).
 - **Version Numbering**: Auto-increment per job (Job 1: versions 1.0, 2.0, 3.0; Job 2: versions 1.0, 2.0); not globally sequential.

@@ -10,7 +10,7 @@
 ### Session 2025-11-07
 
 - Q: How will the system integrate with the core AI model for features like question generation and scoring? → A: Integrate via a third-party API (e.g., OpenAI, Google Gemini).
-- Q: What is the data retention policy for candidate data (resumes, interview responses, scores)? → A: Retain data indefinitely until manually deleted by an HR manager.
+- Q: What is the data retention policy for candidate data (resumes, interview responses, scores)? → A: See FR-017 (indefinite retention; manual deletion only by HR).
 - Q: What is the expected behavior if a candidate loses internet connection during an AI-led interview? → A: The interview session is terminated, and the candidate must restart from the beginning.
 - Q: How are the unique interview links secured to prevent unauthorized access or use? → A: Links require candidate authentication (e.g., email verification, password) before accessing the interview.
 - Q: How are the "predefined competencies" managed and defined within the system? → A: Competencies are fixed and hardcoded within the system, applied universally to all jobs.

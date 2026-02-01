@@ -2,13 +2,13 @@
 
 ## Purpose
 
-Detect and summarize requirement conflicts across specifications in this repository, and within a single spec, providing actionable resolution guidance tied to sources and priorities.
+Detect and summarize requirement conflicts across specifications in this repository, and within a single spec, providing actionable resolution guidance tied to sources and priorities. Also detect duplicate requirements across specs and within a spec, de-duplicate findings, and produce a separate duplicate-requirements report.
 
 ## Scope
 
 - Repository: AI-Talent-Analyst-System-Documentation
 - Primary inputs: Feature specs under `001-...` to `009-...`, `Template/spec-template.md`, and `.github/copilot-instructions.md` for predefined decisions.
-- Output: A human-readable conflict report with links to source files/lines, categorized by conflict type, severity, and suggested fixes.
+- Output: A human-readable conflict report with links to source files/lines, categorized by conflict type, severity, and suggested fixes, plus a duplicate-requirements report.
 
 ## When to Use
 
@@ -28,10 +28,13 @@ Detect and summarize requirement conflicts across specifications in this reposit
 
 ## Outputs
 
-- Structured Markdown report including:
+- Structured Markdown conflict report including:
   - Summary (counts by conflict type, severity, files affected)
   - Detailed findings (each conflict with: type, severity, impacted features/entities, source links, rationale, and resolution proposals)
   - Appendix (normalized requirement index)
+- Duplicate-requirements report including:
+  - Summary (counts by duplicate type, files affected)
+  - Detailed duplicates (each duplicate with: scope, canonical requirement, sources, and recommended consolidation)
 
 ## Conflict Taxonomy
 
@@ -53,6 +56,9 @@ Detect and summarize requirement conflicts across specifications in this reposit
    - Job Description versioning vs other specs assuming single JD; how references resolve over time.
 9. Terminology Drift
    - Same concept, different names ("Company Admin" vs "Tenant Admin"), causing implementer ambiguity.
+10. Duplicate Requirement
+
+- The same requirement is stated multiple times across specs or within a single spec (including Clarifications/Assumptions vs FRs), causing noise and inflated counts.
 
 ## Detection Heuristics
 
@@ -65,6 +71,10 @@ Detect and summarize requirement conflicts across specifications in this reposit
   - Versioning cues: version, immutable, reference, snapshot
 - Normalization keys for requirements:
   - FeatureId, Section (Requirements/User Stories/Acceptance), Priority, Subject (Entity/Resource), Action, Constraint, Scope (Tenant/System), Enforcement Point (API/Controller/UI), SourcePath, SourceLine(s), RawText
+- Duplicate detection signals:
+  - Exact-text matches after normalization (case/whitespace/punctuation)
+  - Near-duplicate semantic matches for the same Subject+Action+Constraint
+  - Duplicates across sections (Clarifications/Assumptions vs FRs)
 - Conflict scoring (severity):
   - High: Direct contradiction on P1 or predefined decision
   - Medium: Flow or RBAC inconsistency impacting enforcement/audit
@@ -92,12 +102,19 @@ Detect and summarize requirement conflicts across specifications in this reposit
    - Multi-tenant: operations lacking tenant scope or auditing when impersonating.
    - Retention/compliance: deletion rules vs indefinite retention.
    - Versioning: references assuming single JD vs explicit version snapshots.
-6. Rate Severity
+6. Detect Duplicates
+   - Group requirements by Subject+Action+Constraint and by normalized text.
+   - Flag exact duplicates and near-duplicates across different sections or files.
+   - If duplicates are found, remove duplicate entries from the conflict report and normalized index (keep a single canonical entry).
+7. Rate Severity
    - Apply severity scoring; escalate when predefined decisions are contradicted.
-7. Recommend Resolutions
+8. Recommend Resolutions
    - Prefer alignment to predefined decisions; otherwise, propose a single source of truth and minimal spec edits.
-8. Produce Report
+9. Produce Report
    - Use the Report Template below. Include source links to exact files and lines where possible.
+10. Produce Duplicate Report
+
+- Generate REQUIREMENT_DUPLICATES.md listing duplicates removed from the conflict report and where they occur.
 
 ## Report Template
 
@@ -119,10 +136,26 @@ Detect and summarize requirement conflicts across specifications in this reposit
 - Appendix: Normalized Requirements Index
   - <Feature> — <Subject> — <Action> — <Constraint> — <Priority> — <Source link>
 
+## Duplicate Report Template (REQUIREMENT_DUPLICATES.md)
+
+- Summary
+  - Total duplicates: N
+  - By scope: {WithinSpec: n1, AcrossSpecs: n2}
+  - Affected files: [path1, path2, ...]
+
+- Duplicates
+  1.  [Scope: WithinSpec|AcrossSpecs]
+      - Canonical Requirement: <Normalized requirement>
+      - Sources:
+        - <path>(#Lstart-Lend)
+        - <path>(#Lstart-Lend)
+      - Recommendation: <Consolidate into canonical FR or move non-FR restatements to cross-references>
+
 ## Usage Instructions (for this assistant)
 
 - Read this SKILL.md; then scan the default inputs unless the user supplies filters.
 - Generate the conflict report using the template above with repository-relative links.
+- Detect and remove duplicates from the conflict report/index and generate REQUIREMENT_DUPLICATES.md.
 - If confidence is low for a suspected conflict, mark it as "Potential" and include rationale.
 - Always cross-check against `.github/copilot-instructions.md` and treat its Predefined Design Decisions as authoritative.
 

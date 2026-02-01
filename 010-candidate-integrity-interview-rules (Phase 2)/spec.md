@@ -204,7 +204,7 @@ As an HR Manager, I want to view a comprehensive integrity report for each candi
 
 - **Server-Side Authority**: Backend countdown timer is source of truth; client-side timer is for UX only and cannot extend time by manipulation.
 
-- **Audit Retention**: All integrity events stored indefinitely alongside interview data; no automatic deletion or archival (aligned with existing data retention policy).
+- **Audit Retention**: See FR-020 (indefinite retention; no automatic deletion or archival).
 
 - **HR Review Required**: High-risk integrity reports flag candidates for HR review but do NOT automatically disqualify them; HR makes final hiring decision with integrity context.
 
