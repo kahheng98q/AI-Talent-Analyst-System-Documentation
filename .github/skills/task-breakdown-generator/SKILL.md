@@ -1,12 +1,12 @@
 ---
 name: task-breakdown-generator
-description: Generate structured task breakdown markdown files from specification documents, organizing main tasks and subtasks by implementation area (Frontend, Backend, API, etc.) with descriptions. Use when users ask to create task lists, development breakdowns, work items, or implementation plans from feature specs, requirements documents, or technical specifications.
+description: Generate structured task breakdown markdown files from specification documents, organizing main tasks and subtasks by implementation area (Frontend, Backend, Database, Testing) with descriptions and clear dependency linkages. Use when users ask to create task lists, development breakdowns, work items, or implementation plans from feature specs, requirements documents, or technical specifications.
 license: Complete terms in LICENSE.txt
 ---
 
 # Task Breakdown Generator
 
-Automatically generates structured markdown files that break down feature specifications into actionable main tasks and subtasks, organized by implementation area (Frontend, Backend, API, etc.).
+Automatically generates structured markdown files that break down feature specifications into actionable main tasks and subtasks, organized by implementation area for developer clarity.
 
 ## When to Use This Skill
 
@@ -29,84 +29,77 @@ Read the provided specification document (spec.md or similar) to extract:
 
 ### 2. Categorize by Implementation Area
 
-Organize tasks into logical categories based on the work:
+Organize tasks into **4-5 core categories** to avoid duplication:
 
-**Standard Categories:**
+**Core Categories (Always Use):**
 
+- **Database** - Schema design, migrations, indexes, relationships
+- **Backend** - Business logic, services, **AND API endpoints** (combined to avoid duplication)
 - **Frontend** - UI components, pages, forms, user interactions
-- **Backend** - Business logic, data processing, domain models, API endpoints (REST/GraphQL), request/response handling
-- **Database** - Schema design, migrations, indexes
-- **Authentication/Authorization** - User management, permissions, RBAC
-- **Integration** - Third-party services, external APIs
-- **DevOps/Infrastructure** - Deployment, monitoring, CI/CD
 - **Testing** - Unit tests, integration tests, E2E tests
-- **Documentation** - API docs, user guides, deployment guides
 
-**Custom Categories**: Add domain-specific areas as needed (e.g., "AI Model Integration", "Report Generation", "Audit Logging")
+**Optional Categories (Add When Needed):**
 
-**Note**: API endpoints are organized under Backend as they represent the backend's interface layer.
+- **Integration** - Third-party services, external APIs (e.g., AI models, payment gateways)
+- **DevOps/Infrastructure** - Deployment, monitoring, CI/CD (if significant work)
+- **Documentation** - API docs, user guides (if explicitly required)
+
+**⚠️ IMPORTANT**: API endpoints belong in the **Backend** section alongside service layer logic. Do NOT create a separate "API" category—this causes duplication since APIs and services are tightly coupled.
 
 ### 3. Create Task Hierarchy
 
-**Main Tasks** = High-level feature areas or modules (1-5 days of work)
+**Main Tasks** = High-level feature modules (1-5 days of work)
 
-- Examples: "Candidate Module", "Job Description Module", "Authentication System"
+- Examples: "Candidate Management Module", "JD Versioning Service", "Version History UI"
 - Each main task represents a cohesive unit of work
 
-**Subtasks** = Specific implementation items under each main task (0.5-2 days of work)
+**Subtasks** = Specific implementation items (0.5-2 days of work)
 
-- Examples: "Create candidate list view", "Implement resume upload API", "Design user table schema"
-- Each subtask should be independently testable and deployable where possible
-- Use when: A main task has 3-5 distinct deliverables
+- Examples: "Implement version creation logic", "Create version history API endpoint", "Build diff viewer component"
+- Each subtask should be independently testable
 
-**Sub-Subtasks** = Granular implementation details within complex subtasks (2-8 hours of work)
+**⚠️ AVOID Sub-Subtasks Unless Absolutely Necessary**
 
-- Examples: Under "Register Scheduled Jobs", list: "Register QuotaThresholdChecker", "Register BalanceThresholdChecker", etc.
-- Use when: A subtask is complex enough to warrant further breakdown (> 1 day of work)
-- Improves clarity by explaining what specific work items are included in abstract subtasks
+- Default to **2 levels only** (Main Task → Subtask)
+- Only use sub-subtasks when a subtask contains **3+ distinct configuration items** that need listing
+- If a subtask seems too large, promote it to a Main Task instead
 
-### 3.1. Add Cross-Area Linkages
+### 3.1. Simplified Cross-References
 
-**Purpose**: Make the documentation easier to navigate by explicitly showing dependencies and relationships between areas.
+Use **3 essential linkage types** to show relationships without excessive overhead:
 
-**Linkage Types**:
+| Field             | Purpose                         | Example                         |
+| ----------------- | ------------------------------- | ------------------------------- |
+| **Depends On**    | What must exist first           | `Database 1.1 (versions table)` |
+| **Related**       | Connected tasks (bidirectional) | `Frontend 1.2, Backend 2.3`     |
+| **Test Coverage** | Which test validates this       | `Testing 3.1`                   |
 
-1. **Frontend → Backend**: Reference which Backend API endpoints/methods the Frontend depends on
-   - Example: "Depends on Backend Task 2.1 (GET /api/candidates endpoint)"
-   - Example: "Calls CandidateService.createCandidate() method from Backend Task 2.2"
+**Linkage Rules:**
 
-2. **Backend → Database**: Reference which database tables/migrations must exist
-   - Example: "Requires Database Task 1.1 (candidates table) to be completed"
+1. **Frontend → Backend**: List which Backend subtasks the Frontend calls
+2. **Backend → Database**: List which Database subtasks must exist
+3. **Testing → Implementation**: List which tasks the test covers
 
-3. **Testing → Frontend/Backend**: Reference which tasks the test is validating
-   - Example: "Tests Frontend Task 1.1 (Candidate List View) and Backend Task 2.1 (GET /api/candidates)"
-
-4. **Backend API → Backend Service**: Reference which service layer methods the API calls
-   - Example: "API endpoint delegates to CandidateService.updateStatus() from Backend Task 2.3"
-
-**How to Document Linkages**:
-
-- Add a **"Depends On"** or **"Uses"** field in subtask descriptions
-- Add a **"Tested By"** field referencing which test tasks validate this functionality
-- Add a **"Called By"** field in Backend tasks showing which Frontend/API tasks consume them
-- Use task numbers for easy cross-referencing (e.g., "Frontend 1.2", "Backend 2.3", "Testing 1.1")
+**Format**: Use short references like `Backend 2.1` or `Database 1.3` (no need to repeat "Task")
 
 ### 4. Write Task Descriptions
 
-For each task and subtask, include:
+For each subtask, include these **essential fields**:
 
-- **What**: Clear description of the work
-- **Why**: Business value or technical necessity (reference spec user story/requirement)
-- **Scope**: Key components, files, or areas affected
-- **Depends On**: Other tasks that must complete first (cross-area references with task numbers)
-- **Uses**: Which Backend APIs/methods this task calls (for Frontend tasks)
-- **Called By**: Which Frontend/API tasks consume this (for Backend tasks)
-- **Tested By**: Which test tasks validate this functionality
-- **Acceptance**: Brief success criteria (derived from spec Given-When-Then scenarios)
+- **Description**: What is being built (clear and specific)
+- **Depends On**: Other tasks that must complete first
+- **Related**: Connected tasks in other areas (bidirectional)
+- **Acceptance**: How to know when it's done
+
+**Optional fields** (use when helpful):
+
+- **Why**: Business justification (for non-obvious tasks)
+- **Files**: Key files to create/modify
+- **API Details**: Request/response schema (for API endpoints)
 
 ## Output Format
 
-Generate a markdown file with this structure:
+Generate a markdown file with this streamlined structure:
 
 ```markdown
 # Task Breakdown: [Feature Name]
@@ -123,140 +116,134 @@ Generate a markdown file with this structure:
 
 ---
 
-## Frontend
+## Database
 
-### Main Task 1: [Component/Module Name]
+### Main Task 1: [Schema/Module Name]
 
-**Description**: [What this main task accomplishes]
+**Description**: [What this accomplishes]
 
-**User Story Reference**: [P1/P2/P3 User Story from spec]
+#### Subtask 1.1: [Table name] Table
 
-#### Subtask 1.1: [Specific UI element or page]
-
-- **Description**: [Detailed description of work]
-- **Uses**: Backend Task [X.Y] - [API endpoint or method name]
-- **Tested By**: Testing Task [Z.W]
-- **Acceptance**: [Success criteria]
-- **Files**: [Key files to create/modify]
-
-#### Subtask 1.2: [Another specific element]
-
-- **Description**: [Detailed description]
-- **Uses**: Backend Task [X.Y] - [API endpoint or method name]
-- **Tested By**: Testing Task [Z.W]
-- **Acceptance**: [Success criteria]
-- **Files**: [Key files]
-
-### Main Task 2: [Another Component]
-
-...
+- **Description**: Create migration for [entity] table
+- **Columns**: [Key columns and types]
+- **Indexes**: [Performance indexes]
+- **Related**: Backend 2.1, Backend 2.3
+- **Acceptance**: Migration runs successfully
 
 ---
 
 ## Backend
 
-### Main Task 1: [Service/Module Name]
+### Main Task 2: [Service/Module Name]
 
-**Description**: [What this accomplishes]
+**Description**: [What this accomplishes - includes both service logic AND API endpoints]
 
-**Requirement Reference**: [Functional requirement from spec]
+**Requirement Reference**: [FR-xxx from spec]
 
-#### Subtask 1.1: [API Endpoint - HTTP Method /api/path]
+#### Subtask 2.1: [Feature] Service Logic
 
-- **Description**: [Endpoint purpose and functionality]
-- **Request**: [Request body/params schema]
-- **Response**: [Response schema]
-- **Service Method**: Calls [ServiceName.methodName()] from Backend Task [X.Y]
-- **Called By**: Frontend Task [A.B]
-- **Tested By**: Testing Task [Z.W]
-- **Acceptance**: [API success criteria]
+- **Description**: Implement core business logic for [feature]
+- **Methods**: `ServiceName.methodOne()`, `ServiceName.methodTwo()`
+- **Depends On**: Database 1.1
+- **Related**: Frontend 1.1
+- **Acceptance**: [Success criteria]
 
-#### Subtask 1.2: [Service Layer - Method Name]
+#### Subtask 2.2: API - GET /api/[resource]
 
-- **Description**: [Business logic details]
-- **Depends On**: Database Task [X.Y] - [Table name]
-- **Called By**: Backend Task [A.B] - [API endpoint], Frontend (via API)
-- **Tested By**: Testing Task [Z.W]
-- **Acceptance**: [Criteria]
+- **Description**: List [resources] with pagination
+- **Request**: Query params: `page`, `limit`, `filter`
+- **Response**: `{ items: [...], total: number }`
+- **Depends On**: Backend 2.1 (service logic)
+- **Related**: Frontend 1.2
+- **Test Coverage**: Testing 4.1
+- **Acceptance**: Returns paginated results in <500ms
 
-##### Sub-Subtask 1.1.1: [Granular implementation detail]
+#### Subtask 2.3: API - POST /api/[resource]
 
-- **Description**: [Specific work item]
-- **Why**: [Why this is needed]
-- **Acceptance**: [Success criteria for this specific item]
-
-##### Sub-Subtask 1.1.2: [Another granularJobs detail]
-
-- **Description**: [Details]
-- **Acceptance**: [Criteria]
-
-...
+- **Description**: Create new [resource]
+- **Request**: `{ field1, field2, ... }`
+- **Response**: `{ id, ...created resource }`
+- **Depends On**: Backend 2.1
+- **Related**: Frontend 1.3
+- **Test Coverage**: Testing 4.2
+- **Acceptance**: Creates resource, returns 201
 
 ---
 
-## Database
+## Frontend
 
-### Main Task 1: Schema Design
+### Main Task 3: [Component/Module Name]
 
-#### Subtask 1.1: [Entity name] Table
+**Description**: [What this accomplishes]
 
-- **Description**: Design and create migration for [entity] table
-- **Columns**: [Key columns and relationships]
-- **Indexes**: [Performance indexes]
-- **Used By**: Backend Task [X.Y] - [Service/method name]
-- **Acceptance**: Migration runs successfully in dev/staging
+**User Story Reference**: [User Story X from spec]
 
-...
+#### Subtask 3.1: [Component/Page Name]
+
+- **Description**: Build UI for [feature]
+- **Components**: `ComponentA`, `ComponentB`
+- **Depends On**: Backend 2.2 (API endpoint)
+- **Test Coverage**: Testing 5.1
+- **Acceptance**: [User-facing success criteria]
+- **Files**: `components/X.tsx`, `pages/Y.tsx`
 
 ---
 
 ## Testing
 
-### Main Task 1: [Test Suite Name]
+### Main Task 4: [Test Suite Name]
 
-**Description**: [What this test suite covers]
+**Description**: Test coverage for [feature area]
 
-#### Subtask 1.1: [Specific test case or test file]
+#### Subtask 4.1: [Test Name]
 
 - **Description**: [What is being tested]
-- **Tests**: Frontend Task [X.Y], Backend Task [A.B]
-- **Test Type**: [Unit/Integration/E2E]
-- **Scenarios**: [Key test scenarios from spec]
-- **Acceptance**: All tests pass, coverage > [X]%
-
----
-
-## [Other Categories as Needed]
+- **Covers**: Backend 2.1, Backend 2.2
+- **Type**: Unit / Integration / E2E
+- **Scenarios**: [Key test cases from spec GWT]
+- **Acceptance**: All tests pass
 
 ---
 
 ## Task Summary
 
-- **Total Main Tasks**: [Count]
-- **Total Subtasks**: [Count]
-- **Priority Distribution**:
-  - P1 (MVP): [Count] main tasks
-  - P2 (Enhancement): [Count] main tasks
-  - P3 (Nice-to-have): [Count] main tasks
+| Area      | Main Tasks | Subtasks |
+| --------- | ---------- | -------- |
+| Database  | X          | Y        |
+| Backend   | X          | Y        |
+| Frontend  | X          | Y        |
+| Testing   | X          | Y        |
+| **Total** | **X**      | **Y**    |
+
+**Priority Distribution**:
+
+- P1 (MVP): X tasks
+- P2 (Enhancement): Y tasks
 
 ---
 
 ## Dependencies & Sequencing
 
-1. **Phase 1** (Must complete first):
-   - [Task dependencies that block other work]
+### Phase 1: Foundation
 
-2. **Phase 2** (Can parallelize):
-   - [Independent tasks that can run concurrently]
+- Database schema (blocks all backend work)
+- Core service logic
 
-3. **Phase 3** (Final integration):
-   - [Integration and E2E work]
+### Phase 2: Core Features (can parallelize)
+
+- Backend APIs
+- Frontend components
+
+### Phase 3: Integration & Testing
+
+- E2E tests
+- Feature integrations
 
 ---
 
 ## Notes
 
-- [Any clarifications, assumptions, or open questions]
+[Clarifications, assumptions, open questions]
 ```
 
 ## Best Practices
@@ -265,73 +252,63 @@ Generate a markdown file with this structure:
 
 - **Main tasks** = 1-5 days of work for a developer
 - **Subtasks** = 0.5-2 days of work (story-point size)
-- **Sub-Subtasks** = 2-8 hours of work (implementation details)
-- If a subtask is larger, break it down into sub-subtasks
+- If a subtask is larger than 2 days, split it into multiple subtasks or promote to Main Task
 
-### When to Use Sub-Subtasks
+### Backend Task Organization
 
-Use sub-subtasks (nested level 3) when:
+**Combine service logic and APIs within the same Main Task:**
 
-1. **Complex Subtask**: A subtask is too large (> 1 day) and contains multiple distinct items to explain
-2. **Abstract/Vague Naming**: The subtask name is abstract and needs concrete examples of what's included
-   - ❌ Bad: "Register Scheduled Jobs" (too vague, what jobs?)
-   - ✅ Good: Break into sub-subtasks: "Register QuotaThresholdChecker", "Register BalanceThresholdChecker", etc.
-3. **Multiple Deliverables**: The subtask involves 3+ discrete items that should be tracked separately
-4. **Clarity for Team**: The team won't understand what's included without further breakdown
-5. **Configuration/Setup Tasks**: Tasks that involve setting up multiple related systems
+```markdown
+### Main Task 2: Candidate Management Service
 
-Do **NOT** use sub-subtasks when:
+#### Subtask 2.1: Core Service Logic
 
-- Subtask is already clear and concise (< 1 day of work)
-- Breaking it down further adds no value
-- The subtask is already granular (e.g., "Create login form")
+- CandidateService.create(), .update(), .delete(), .findAll()
+
+#### Subtask 2.2: API - GET /api/candidates
+
+- Calls CandidateService.findAll()
+
+#### Subtask 2.3: API - POST /api/candidates
+
+- Calls CandidateService.create()
+
+#### Subtask 2.4: API - PUT /api/candidates/{id}
+
+- Calls CandidateService.update()
+```
+
+**Benefits**:
+
+- Developer sees full vertical slice (service + API) in one place
+- No jumping between "Backend" and "API" sections
+- Clear relationship between service methods and their API consumers
 
 ### Priority Mapping
 
 - Map tasks to spec user story priorities:
   - **P1 tasks** = Must-have for MVP (from P1 user stories)
   - **P2 tasks** = Important enhancements (from P2 user stories)
-  - **P3 tasks** = Nice-to-have (from P3 user stories or technical debt)
 
 ### Naming Conventions
 
-- Use action verbs: "Create", "Implement", "Design", "Build", "Configure", "Register", "Set up"
-- Be specific: "Create candidate list view with filters" vs "Make candidate page"
+- Use action verbs: "Create", "Implement", "Build", "Configure"
+- Be specific: "Build candidate list with pagination" vs "Make candidate page"
+- For APIs: Use format "API - HTTP_METHOD /path" (e.g., "API - GET /api/candidates")
 - Reference spec entities: Use exact naming from spec's data models
-- For sub-subtasks: Use specific names of items being registered/configured
 
-### Description Quality
+### Cross-Referencing Best Practices
 
-Each description should answer:
-
-- **What** is being built
-- **Why** it's needed (link to spec requirement)
-- **How** it fits into the larger system
-- **When** it should be done (dependency order)
-- **Who** consumes/depends on this (cross-references)
-
-For sub-subtasks, add:
-
-- **Specific Implementation Detail**: What exactly is this item doing
-- **Expected Behavior**: How it should work or integrate
-
-### Cross-Referencing
-
-- **Use task numbers consistently**: Frontend 1.2, Backend 2.3, Database 1.1, Testing 3.1
-- **Be explicit about dependencies**: Don't say "depends on API", say "depends on Backend Task 2.1 (GET /api/candidates endpoint)"
-- **Show bidirectional links**:
-  - Frontend tasks list which Backend tasks they use
-  - Backend tasks list which Frontend tasks call them
-  - Testing tasks list which Frontend/Backend tasks they validate
-- **Update links when tasks change**: If you renumber tasks, update all cross-references
+- **Use short format**: `Backend 2.1` instead of `Backend Task 2.1`
+- **Be specific**: Include what the reference is for: `Backend 2.3 (POST /api/jobs)`
+- **Keep it simple**: Don't over-link; focus on direct dependencies
+- **Bidirectional only when helpful**: Frontend lists Backend dependencies; Backend can note "Related: Frontend 1.2" but it's optional
 
 ### Traceability
 
-- Reference spec sections explicitly (e.g., "User Story 1.2", "Requirement FR-003")
-- Link acceptance criteria back to spec Given-When-Then scenarios
-- Preserve spec terminology (entity names, field names, status values)
-- Cross-reference related tasks using task numbers (e.g., "Depends On: Backend 2.1", "Called By: Frontend 1.3")
-- Include "Tested By" references in implementation tasks to link to test coverage
+- Reference spec sections: "User Story 1.2", "Requirement FR-003"
+- Link acceptance criteria to spec Given-When-Then scenarios
+- Preserve spec terminology (entity names, field names)
 
 ## Example Invocations
 
@@ -340,396 +317,107 @@ For sub-subtasks, add:
 **Process**:
 
 1. Read `001-ai-hr-interview-system/spec.md`
-2. Extract user stories (P1/P2/P3), requirements, entities
-3. Categorize into Frontend, Backend (including APIs), Database, AI Integration, Testing
-4. Create main tasks (Interview Module, Resume Upload, AI Scoring Engine, etc.)
-5. Break each into subtasks with descriptions and cross-references
-6. Add "Uses", "Called By", "Tested By" fields to show relationships
-7. Generate `001-ai-hr-interview-system/TASK_BREAKDOWN.md`
+2. Extract user stories (P1/P2), requirements, entities
+3. Categorize into: Database, Backend (services + APIs), Frontend, Testing
+4. Create main tasks with clear subtasks
+5. Add simplified cross-references (Depends On, Related, Test Coverage)
+6. Generate `001-ai-hr-interview-system/TASK_BREAKDOWN.md`
 
 **User**: "Break down the SaaS Admin Portal spec into implementation tasks"
 
 **Process**:
 
 1. Read `002-saas-admin-portal-company-management/spec.md`
-2. Identify areas: Frontend (admin UI), Backend (company management, API endpoints), Database, Auth (God Mode), Testing
-3. Create tasks organized by area with cross-references
-4. Add linkages: Frontend UI → Backend APIs → Database tables → Testing
-5. Reference spec requirements and user stories in descriptions
-6. Generate `002-saas-admin-portal-company-management/TASK_BREAKDOWN.md`
+2. Identify areas: Database (company/user tables), Backend (CRUD services + APIs), Frontend (admin UI), Testing
+3. Organize Backend to include both service logic and API endpoints together
+4. Add cross-references between areas
+5. Generate `002-saas-admin-portal-company-management/TASK_BREAKDOWN.md`
 
 ## Tips
 
-- **Read the spec thoroughly** - Don't skip entities, requirements, or success metrics sections
-- **Preserve spec language** - Use exact field names, entity names, status values from the spec
-- **Include edge cases** - If spec mentions validation rules or error handling, create subtasks for them
-- **Think deployment** - Include tasks for migrations, config, environment variables
-- **Consider testing** - Add testing subtasks for critical paths (unit, integration, E2E)
-- **Add cross-references early** - As you create Backend APIs, note which Frontend tasks will call them
-- **Number tasks sequentially** - Use consistent numbering (1.1, 1.2, 2.1) for easy cross-referencing
-- **Link bidirectionally** - If Frontend 1.2 uses Backend 2.3, note this in both tasks
-- **Update as needed** - Task breakdowns are living documents; update when specs change
+- **Read the spec thoroughly** - Extract all entities, requirements, and success metrics
+- **Preserve spec language** - Use exact field names, entity names from the spec
+- **Include edge cases** - If spec mentions validation, create subtasks for it
+- **Keep Backend unified** - Service logic and APIs in same section, same main task when related
+- **Test coverage matters** - Every key subtask should reference which test covers it
+- **Think in phases** - Group tasks by dependency order for realistic sequencing
 
 ## Anti-Patterns to Avoid
 
-❌ **Vague descriptions**: "Do the frontend stuff"  
-✅ **Specific descriptions**: "Create candidate registration form with email validation and resume upload"
+❌ **Separate API section from Backend**: Creates duplication  
+✅ **Combined Backend**: Service logic + API endpoints together
 
-❌ **Vague subtask with no breakdown**: "Register Scheduled Jobs" (what jobs? which ones?)  
-✅ **Clear sub-subtasks**:
+❌ **Too many linkage fields**: Uses, Called By, Depends On, Used By, Tested By, Tests, Service Method...  
+✅ **Three fields**: Depends On, Related, Test Coverage
 
-- Register QuotaThresholdChecker job (every 15 min)
-- Register BalanceThresholdChecker job (every 15 min)
-- Register ExpiredReservationCleanup job (every hour)
-- Register NotificationFlagReset job (daily at midnight)
+❌ **Sub-sub-subtasks**: Three+ levels of nesting  
+✅ **Two levels max**: Main Task → Subtask (promote if too complex)
 
-❌ **Missing dependencies**: Tasks that can't be done without others being complete first  
-✅ **Clear dependencies**: "Depends On: Database Task 1.1 (candidates table migration)"
+❌ **Vague descriptions**: "Do the backend stuff"  
+✅ **Specific descriptions**: "Implement candidate CRUD with pagination and filtering"
 
-❌ **No cross-references**: Frontend task doesn't mention which Backend API it calls  
-✅ **Clear linkage**: "Uses: Backend Task 2.1 (GET /api/candidates endpoint)"
+❌ **Missing acceptance**: No way to know when done  
+✅ **Clear acceptance**: "API returns paginated list in <500ms; 401 for unauthorized"
 
-❌ **One-way references**: Backend task doesn't show who uses it  
-✅ **Bidirectional links**: "Called By: Frontend Task 1.2 (Candidate List View)"
-
-❌ **Too granular**: "Write line 42 of controller.py"  
-✅ **Right size**: "Implement candidate CRUD controller with validation"
-
-❌ **Missing acceptance**: No way to know when task is done  
-✅ **Clear acceptance**: "API returns 200 with candidate list, supports pagination (limit/offset)"
-
-❌ **Ignoring priorities**: All tasks marked equally important  
-✅ **Priority-aware**: P1 MVP tasks separated from P2 enhancements
-
-❌ **Abstract task names that need explanation**: "Configure Job Scheduler"  
-✅ **Breakdown with concrete details**: Create sub-subtasks explaining which jobs to register and their schedules
+❌ **Ignoring priorities**: All tasks marked equally  
+✅ **Priority-aware**: P1 MVP tasks clearly separated from P2 enhancements
 
 ---
 
-## Verification & Validation Checklist (MANDATORY)
+## Validation Checklist (Quick Check)
 
-⚠️ **CRITICAL**: After generating ANY TASK_BREAKDOWN.md file, you MUST perform a **comprehensive cross-reference validation** before presenting it to the user. This step is NON-OPTIONAL to prevent broken references and incomplete dependency tracking.
+Before presenting the TASK_BREAKDOWN.md, run these **3 quick checks**:
 
-### Validation Workflow Overview
+### Check 1: Reference Existence
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    TASK BREAKDOWN GENERATION                        │
-├─────────────────────────────────────────────────────────────────────┤
-│ Step 1: Generate Initial Breakdown                                  │
-│         ↓                                                           │
-│ Step 2: Build Cross-Reference Maps (Phase 1)                        │
-│         ↓                                                           │
-│ Step 3: Validate Bidirectional Links (Phase 2)                      │
-│         ↓                                                           │
-│ Step 4: Detect Error Patterns (Phase 3)                             │
-│         ↓                                                           │
-│ Step 5: Fix ALL Errors Found                                        │
-│         ↓                                                           │
-│ Step 6: Re-validate Until 0 Errors                                  │
-│         ↓                                                           │
-│ Step 7: Generate Validation Summary (Phase 4)                       │
-│         ↓                                                           │
-│ Step 8: Present Final Validated TASK_BREAKDOWN.md                   │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### Phase 1: Build Cross-Reference Maps
-
-**BEFORE presenting the file, extract ALL cross-references into structured maps:**
-
-**1. Parse ALL linkage fields systematically:**
-
-| Linkage Type     | Direction                     | Expected Reverse Linkage             |
-| ---------------- | ----------------------------- | ------------------------------------ |
-| `Uses`           | Frontend → Backend            | `Called By` on Backend               |
-| `Called By`      | Backend → Frontend/Backend    | `Uses` or `Service Method` on caller |
-| `Depends On`     | Any → Database/Other          | `Used By` on dependency              |
-| `Used By`        | Database → Backend            | `Depends On` on user                 |
-| `Tested By`      | Implementation → Testing      | `Tests` on Testing                   |
-| `Tests`          | Testing → Implementation      | `Tested By` on Implementation        |
-| `Service Method` | Backend API → Backend Service | `Called By` on Service               |
-
-**2. Build reference inventory table:**
+Every task reference (e.g., `Backend 2.1`, `Database 1.3`) must point to a task that exists.
 
 ```
-| Task ID       | References (Outgoing)                    | Referenced By (Incoming Expected) |
-|---------------|------------------------------------------|-----------------------------------|
-| Frontend 1.1  | Uses: Backend 2.1, Backend 2.3           | Should appear in Backend 2.1, 2.3 |
-| Backend 2.1   | Depends On: Database 1.1                 | Should appear in Database 1.1     |
-|               | Called By: Frontend 1.1                  | Should match Frontend 1.1 Uses    |
-| Database 1.1  | Used By: Backend 2.1, Backend 2.2        | Should match Backend Depends On   |
-| Testing 1.1   | Tests: Frontend 1.1, Backend 2.1         | Should appear as Tested By        |
+✓ Frontend 1.1 says "Depends On: Backend 2.1" → Backend 2.1 exists
+✗ Frontend 1.2 says "Depends On: Backend 2.5" → Backend 2.5 doesn't exist (ERROR)
 ```
 
-**3. Create validation checklist for each task:**
+### Check 2: Dependency Flow
 
-For EVERY task in the breakdown, verify:
-
-- [ ] All outgoing references point to existing tasks
-- [ ] All outgoing references have corresponding incoming references on target
-- [ ] Task numbers are consistent (no typos like "Backend 2.1" vs "Backend Task 2.1")
-- [ ] Service method names match actual implementations
-
-### Phase 2: Validate Bidirectional References (MANDATORY CHECKS)
-
-**Rule 1: Uses ↔ Called By (Frontend ↔ Backend)**
+Dependencies should flow in logical order:
 
 ```
-✓ CORRECT:
-  Frontend 1.2: "Uses: Backend Task 2.1 (GET /api/candidates)"
-  Backend 2.1:  "Called By: Frontend Task 1.2 (Candidate List View)"
-
-✗ INCORRECT:
-  Frontend 1.2: "Uses: Backend Task 2.1"
-  Backend 2.1:  [No "Called By" field or doesn't mention Frontend 1.2]
+Database → Backend → Frontend → Testing
 ```
 
-**Validation Action**: For EVERY `Uses` field, find the target task and verify it has a `Called By` that includes the source task.
+- Backend depends on Database (not vice versa)
+- Frontend depends on Backend APIs (not vice versa)
+- Testing covers implementation tasks
 
-**Rule 2: Depends On ↔ Used By (Implementation ↔ Database/Dependencies)**
+### Check 3: Test Coverage
 
-```
-✓ CORRECT:
-  Backend 2.1:  "Depends On: Database Task 1.1 (candidates table)"
-  Database 1.1: "Used By: Backend Task 2.1 (CandidateService)"
-
-✗ INCORRECT:
-  Backend 2.1:  "Depends On: Database Task 1.1"
-  Database 1.1: [No "Used By" field or doesn't mention Backend 2.1]
-```
-
-**Validation Action**: For EVERY `Depends On` field, find the target task and verify it has a `Used By` that includes the source task.
-
-**Rule 3: Tested By ↔ Tests (Implementation ↔ Testing)**
+Every P1 Backend and Frontend subtask should have a corresponding test:
 
 ```
-✓ CORRECT:
-  Backend 2.1: "Tested By: Testing Task 3.1"
-  Testing 3.1: "Tests: Backend Task 2.1, Frontend Task 1.2"
-
-✗ INCORRECT:
-  Backend 2.1: "Tested By: Testing Task 3.1"
-  Testing 3.1: "Tests: Backend Task 2.2"  ← Mismatch!
+✓ Backend 2.1 → has "Test Coverage: Testing 4.1"
+✗ Frontend 1.3 → no test coverage mentioned (WARNING)
 ```
 
-**Validation Action**: For EVERY `Tested By` field, find the target Testing task and verify its `Tests` field includes the source task.
+### Validation Summary (Optional)
 
-**Rule 4: Service Method References ↔ Backend Service Tasks**
-
-```
-✓ CORRECT:
-  Backend 2.1 (API): "Service Method: Calls CandidateService.create() from Backend Task 2.5"
-  Backend 2.5:       "Called By: Backend Task 2.1 (POST /api/candidates API)"
-
-✗ INCORRECT:
-  Backend 2.1: "Calls CandidateService.create()"
-  Backend 2.5: [Doesn't implement create() or no "Called By" reference]
-```
-
-**Validation Action**: For EVERY service method call, verify the service task implements that method and has a `Called By` reference.
-
-**Rule 5: Task Number Format Consistency**
-
-```
-✓ CORRECT (pick ONE format and stick to it):
-  "Uses: Backend Task 2.1"
-  "Called By: Frontend Task 1.2"
-
-✗ INCORRECT (mixing formats):
-  "Uses: Backend 2.1"           ← Missing "Task"
-  "Called By: Frontend Task 1.2" ← Has "Task"
-```
-
-**Validation Action**: Ensure ALL task references use the SAME format throughout the document.
-
-### Phase 3: Detect and Fix Error Patterns
-
-**Run these checks BEFORE finalizing the document:**
-
-| Error Pattern              | Detection Method                                                    | Fix                                 |
-| -------------------------- | ------------------------------------------------------------------- | ----------------------------------- |
-| **Orphaned Reference**     | Task X mentions Task Y, but Task Y doesn't exist                    | Create Task Y or remove reference   |
-| **One-Way Link**           | Task X references Task Y, but Y doesn't reference X                 | Add reverse reference to Task Y     |
-| **Task Number Typo**       | "Backend 2.1" vs "Backend Task 2.1" vs "Backend 21"                 | Standardize all references          |
-| **Missing Tested By**      | Implementation task has no Tested By field                          | Add Testing task reference          |
-| **Stale Reference**        | Reference to task that was renamed/renumbered                       | Update reference to current task ID |
-| **Duplicate Task Numbers** | Two tasks have same number (e.g., two "Backend 2.1")                | Renumber one task                   |
-| **Cross-Section Mismatch** | Frontend 1.2 says "Uses Backend 2.1" but Backend section has no 2.1 | Create Backend 2.1 or fix reference |
-
-**Error Detection Checklist (MUST complete for every generation):**
-
-```
-[ ] Count all Frontend tasks and verify each has:
-    [ ] At least one "Uses" reference (if it calls backend)
-    [ ] "Tested By" reference
-[ ] Count all Backend tasks and verify each has:
-    [ ] "Called By" reference (who calls this API/service?)
-    [ ] "Depends On" reference (what database tables?)
-    [ ] "Tested By" reference
-[ ] Count all Database tasks and verify each has:
-    [ ] "Used By" reference (which backend tasks use this table?)
-[ ] Count all Testing tasks and verify each has:
-    [ ] "Tests" reference listing what it tests
-[ ] Cross-check: Every "Uses" has matching "Called By"
-[ ] Cross-check: Every "Depends On" has matching "Used By"
-[ ] Cross-check: Every "Tested By" has matching "Tests"
-```
-
-### Phase 4: Generate Validation Summary
-
-**ALWAYS include this section at the end of TASK_BREAKDOWN.md:**
+Add at end of TASK_BREAKDOWN.md if helpful:
 
 ```markdown
 ---
 
-## Cross-Reference Validation Summary
+## Validation Summary
 
-**Validation Date**: [Date]
-**Validation Status**: ✅ PASSED / ⚠️ WARNINGS / ❌ FAILED
-
-### Reference Counts
-
-| Linkage Type | Total Count | Validated | Issues |
-|--------------|-------------|-----------|--------|
-| Uses → Called By | X | X | 0 |
-| Depends On → Used By | X | X | 0 |
-| Tested By → Tests | X | X | 0 |
-| Service Method refs | X | X | 0 |
-
-### Validation Checks Performed
-
-- [x] All Frontend tasks have matching Backend "Called By" references
-- [x] All Backend tasks have matching Database "Used By" references
-- [x] All Implementation tasks have "Tested By" references
-- [x] All Testing tasks have "Tests" references pointing to valid tasks
-- [x] Task numbering is consistent (no duplicates, no gaps)
-- [x] Task reference format is consistent throughout
-
-### Issues Found and Fixed
-
-| Issue | Location | Resolution |
-|-------|----------|------------|
-| (None if validation passed) | | |
-
----
-```
-
-### Phase 5: Iterative Validation Loop
-
-**DO NOT present the TASK_BREAKDOWN.md until validation passes:**
-
-```
-WHILE validation_errors > 0:
-    1. Identify all errors from Phase 3 checks
-    2. Fix each error:
-       - Add missing reverse references
-       - Correct task number typos
-       - Create missing tasks or remove orphaned references
-    3. Re-run Phase 2 validation
-    4. Update error count
-
-IF validation_errors == 0:
-    Add Validation Summary (Phase 4)
-    Present final TASK_BREAKDOWN.md
-```
-
-### Quick Reference: Linkage Pairs
-
-**Memorize these pairs - they ALWAYS go together:**
-
-| If Task A has...                   | Then Target Task B MUST have...   |
-| ---------------------------------- | --------------------------------- |
-| `Uses: B`                          | `Called By: A`                    |
-| `Called By: B`                     | `Uses: A` (or Service Method ref) |
-| `Depends On: B`                    | `Used By: A`                      |
-| `Used By: B`                       | `Depends On: A`                   |
-| `Tested By: B`                     | `Tests: A`                        |
-| `Tests: B`                         | `Tested By: A`                    |
-| `Service Method: calls B.method()` | `Called By: A`                    |
-
-### Example: Complete Validation Walkthrough
-
-**Scenario**: Validating a Feature 009 TASK_BREAKDOWN.md
-
-**Step 1: Extract References**
-
-```
-Frontend 1.1 → Uses: Backend 2.1, Backend 2.3
-Frontend 1.2 → Uses: Backend 2.5
-Backend 2.1  → Depends On: Database 1.1; Tested By: Testing 3.1
-Backend 2.3  → Depends On: Database 1.1; Tested By: Testing 3.2
-Backend 2.5  → Depends On: Database 1.2; Tested By: Testing 3.3
-Database 1.1 → (check for Used By)
-Database 1.2 → (check for Used By)
-Testing 3.1  → Tests: (should include Backend 2.1)
-Testing 3.2  → Tests: (should include Backend 2.3)
-Testing 3.3  → Tests: (should include Backend 2.5)
-```
-
-**Step 2: Validate Bidirectional Links**
-
-```
-Check 1: Frontend 1.1 Uses Backend 2.1
-  → Does Backend 2.1 have "Called By: Frontend 1.1"? YES ✓
-
-Check 2: Frontend 1.1 Uses Backend 2.3
-  → Does Backend 2.3 have "Called By: Frontend 1.1"? NO ✗
-  → FIX: Add "Called By: Frontend Task 1.1" to Backend 2.3
-
-Check 3: Backend 2.1 Depends On Database 1.1
-  → Does Database 1.1 have "Used By: Backend 2.1"? YES ✓
-
-Check 4: Backend 2.1 Tested By Testing 3.1
-  → Does Testing 3.1 have "Tests: Backend 2.1"? YES ✓
-```
-
-**Step 3: Fix Errors**
-
-```
-ERROR: Backend 2.3 missing "Called By: Frontend Task 1.1"
-ACTION: Add "Called By: Frontend Task 1.1 (Version History View)" to Backend 2.3
-```
-
-**Step 4: Re-validate**
-
-```
-All checks pass ✓
-```
-
-**Step 5: Add Validation Summary**
-
-```markdown
-## Cross-Reference Validation Summary
-
-**Validation Date**: 2026-02-02
-**Validation Status**: ✅ PASSED
-
-### Issues Found and Fixed
-
-| Issue                       | Location    | Resolution                           |
-| --------------------------- | ----------- | ------------------------------------ |
-| Missing Called By reference | Backend 2.3 | Added "Called By: Frontend Task 1.1" |
+✅ All references point to existing tasks
+✅ Dependency flow is correct (Database → Backend → Frontend)
+✅ P1 tasks have test coverage
 ```
 
 ---
 
-## Validation Anti-Patterns (NEVER DO THESE)
+## Summary of Key Principles
 
-❌ **Skip validation because "it looks right"**
-✅ **Always run the full validation checklist**
-
-❌ **Fix errors without re-validating**
-✅ **Always re-run validation after fixes**
-
-❌ **Present TASK_BREAKDOWN.md with known errors**
-✅ **Fix ALL errors before presenting to user**
-
-❌ **Use inconsistent task reference formats**
-✅ **Pick one format ("Backend Task 2.1") and use it everywhere**
-
-❌ **Add references without checking target exists**
-✅ **Verify every referenced task actually exists in the document**
-
-❌ **Assume one-way references are OK**
-✅ **Every reference MUST have a reverse reference (bidirectional)**
+1. **4 Core Sections**: Database, Backend (includes APIs), Frontend, Testing
+2. **2 Levels of Nesting**: Main Task → Subtask (avoid sub-subtasks)
+3. **3 Linkage Types**: Depends On, Related, Test Coverage
+4. **Unified Backend**: Service logic and API endpoints in same section/main task
+5. **Quick Validation**: 3 checks before presenting (existence, flow, coverage)
