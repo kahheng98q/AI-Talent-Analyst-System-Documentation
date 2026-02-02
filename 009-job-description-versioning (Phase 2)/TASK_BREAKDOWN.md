@@ -75,7 +75,7 @@ This feature implements comprehensive job description versioning to track JD cha
   - Composite: `(job_id, timestamp)` for audit trail queries
   - Composite: `(company_id, timestamp)` for compliance reporting
   - Single: `actor_user_id` for user activity queries
-- **Used By**: Backend Tasks 2.2, 2.5, 2.6
+- **Used By**: Backend Tasks 2.1, 2.2, 2.6
 - **Acceptance**: Migration runs successfully; foreign keys validated
 
 #### Subtask 1.3: Modify JobDescription Table
@@ -90,7 +90,7 @@ This feature implements comprehensive job description versioning to track JD cha
   - Update foreign key relationships
   - Add NOT NULL constraint after backfill
 - **Indexes**: Single index on `current_version_id`
-- **Used By**: Backend Tasks 2.1, 2.3
+- **Used By**: Backend Tasks 2.1, 2.2, 2.3
 - **Acceptance**: Existing jobs migrated with initial versions; FK constraints enforced
 
 #### Subtask 1.4: Modify InterviewSession Table
@@ -140,7 +140,7 @@ This feature implements comprehensive job description versioning to track JD cha
   - Update `JobDescription.current_version_id` FK
   - Create `JobDescriptionChangeLog` entry (change_type='create', old_version_id=null)
   - Transaction: All-or-nothing atomic operation
-- **Called By**: Backend Task 2.2 (Create Job API)
+- **Called By**: Job creation API endpoint (e.g., Feature 001 Create Job or external API)
 - **Depends On**: Database Task 1.1, 1.2, 1.3
 - **Tested By**: Testing Task 1.1
 - **Acceptance**: New jobs have version 1.0; audit log created; FK constraints validated
@@ -160,7 +160,7 @@ This feature implements comprehensive job description versioning to track JD cha
     - Update `JobDescription.current_version_id` and increment `version_count`
     - Create `JobDescriptionChangeLog` entry (change_type='update')
   - Transaction commit
-- **Called By**: Backend Task 2.3 (Update Job API)
+- **Called By**: Backend Task 2.13 (PUT /api/jobs/{jobId})
 - **Depends On**: Database Task 1.1, 1.2, 1.3
 - **Tested By**: Testing Task 1.2
 - **Acceptance**: Update operation completes in <5 seconds; version number auto-increments; old version preserved
@@ -188,7 +188,7 @@ This feature implements comprehensive job description versioning to track JD cha
   - Join with `interview_sessions` to count candidates per version
   - Filter by `company_id` (multi-tenant isolation)
   - Order by `version_number DESC`
-- **Called By**: Frontend Task 1.2 (via Backend Task 2.8)
+- **Called By**: Backend Task 2.8 (GET /api/jobs/{jobId}/versions)
 - **Depends On**: Database Task 1.1, 1.4
 - **Tested By**: Testing Task 1.3
 - **Acceptance**: Query returns complete history in <3 seconds for 50+ versions; correct candidate counts
@@ -202,7 +202,7 @@ This feature implements comprehensive job description versioning to track JD cha
   - Retrieve `JobDescriptionVersion.content`
   - If content is S3 reference, fetch from blob storage
   - Return content as string or structured object
-- **Called By**: Frontend Task 1.3 (via Backend Task 2.9), Backend Task 2.6, 3.2
+- **Called By**: Backend Tasks 2.6, 2.9, 3.2
 - **Depends On**: Database Task 1.1
 - **Tested By**: Testing Task 1.4
 - **Acceptance**: Content retrieval in <2 seconds for 50KB JDs; S3 fetch succeeds for large JDs
@@ -213,7 +213,7 @@ This feature implements comprehensive job description versioning to track JD cha
 - **Service Method**: `JobDescriptionService.compareVersions(versionId1, versionId2, companyId)`
 - **Return**: Diff object with `{ added: string[], deleted: string[], unchanged: string[] }` or structured field-level diff
 - **Algorithm**: Use Myers diff algorithm or similar library (e.g., `diff-match-patch`)
-- **Called By**: Frontend Task 1.3 (via Backend Task 2.10)
+- **Called By**: Backend Task 2.10 (POST /api/jobs/{jobId}/versions/compare)
 - **Depends On**: Database Task 1.1, Backend Task 2.4
 - **Tested By**: Testing Task 1.5
 - **Acceptance**: Diff generation in <2 seconds for 50KB JDs; highlights correct additions/deletions
@@ -231,7 +231,7 @@ This feature implements comprehensive job description versioning to track JD cha
     - Update `JobDescription.current_version_id` and increment `version_count`
     - Create `JobDescriptionChangeLog` entry (change_type='rollback')
   - Transaction commit
-- **Called By**: Frontend Task 1.4 (via Backend Task 2.11)
+- **Called By**: Backend Task 2.11 (POST /api/jobs/{jobId}/versions/rollback)
 - **Depends On**: Database Task 1.1, 1.2, 1.3, Backend Task 2.4
 - **Tested By**: Testing Task 1.6
 - **Acceptance**: Rollback completes in <5 seconds; new version created with correct content; audit log shows rollback
@@ -250,7 +250,7 @@ This feature implements comprehensive job description versioning to track JD cha
 - **Service Method**: `JobDescriptionService.getVersionAsOfDate(jobId, date, companyId)`
 - **Query**: `SELECT * FROM job_description_versions WHERE job_id=? AND created_at <= ? ORDER BY created_at DESC LIMIT 1`
 - **Return**: Version content and metadata
-- **Called By**: Frontend Task 1.3 (via Backend Task 2.12)
+- **Called By**: Backend Task 2.12 (GET /api/jobs/{jobId}/versions/as-of-date)
 - **Depends On**: Database Task 1.1
 - **Tested By**: Testing Task 1.7
 - **Acceptance**: Query returns correct version for past dates; handles edge cases (date before job created)
@@ -351,7 +351,7 @@ This feature implements comprehensive job description versioning to track JD cha
   - Fetch `InterviewSession.jd_version_id`
   - Retrieve version content via `JobDescriptionService.getVersionContent()`
   - Return content to AI service caller
-- **Called By**: Feature 001 AI integration (resume scoring, question generation services)
+- **Called By**: Feature 001 AI integration (resume scoring, question generation services); Backend Task 3.3 (POST /api/interviews/start)
 - **Depends On**: Database Task 1.4, Backend Task 2.4
 - **Tested By**: Testing Task 3.2
 - **Acceptance**: AI operations use locked version; version unchanged even if JD updated mid-interview
@@ -622,7 +622,7 @@ This feature implements comprehensive job description versioning to track JD cha
 #### Subtask 2.1: Test GET /api/jobs/{jobId}/versions
 
 - **Description**: API integration test for version history endpoint
-- **Tests**: Backend Task 2.8, Frontend Task 1.2
+- **Tests**: Backend Task 2.8
 - **Test Type**: API integration test
 - **Scenarios**:
   - Returns version history for authorized user
@@ -635,7 +635,7 @@ This feature implements comprehensive job description versioning to track JD cha
 #### Subtask 2.2: Test GET /api/jobs/{jobId}/versions/{versionId}
 
 - **Description**: API integration test for specific version retrieval
-- **Tests**: Backend Task 2.9, Frontend Task 1.3
+- **Tests**: Backend Task 2.9
 - **Test Type**: API integration test
 - **Scenarios**:
   - Returns version content for authorized user
@@ -647,7 +647,7 @@ This feature implements comprehensive job description versioning to track JD cha
 #### Subtask 2.3: Test POST /api/jobs/{jobId}/versions/compare
 
 - **Description**: API integration test for version comparison endpoint
-- **Tests**: Backend Task 2.10, Frontend Task 1.3
+- **Tests**: Backend Task 2.10
 - **Test Type**: API integration test
 - **Scenarios**:
   - Returns diff for two valid versions
@@ -659,7 +659,7 @@ This feature implements comprehensive job description versioning to track JD cha
 #### Subtask 2.4: Test POST /api/jobs/{jobId}/versions/rollback
 
 - **Description**: API integration test for rollback endpoint
-- **Tests**: Backend Task 2.11, Frontend Task 1.4
+- **Tests**: Backend Task 2.11
 - **Test Type**: API integration test
 - **Scenarios**:
   - Rollback creates new version with old content
@@ -671,7 +671,7 @@ This feature implements comprehensive job description versioning to track JD cha
 #### Subtask 2.5: Test GET /api/jobs/{jobId}/versions/as-of-date
 
 - **Description**: API integration test for temporal query endpoint
-- **Tests**: Backend Task 2.12, Frontend Task 1.3
+- **Tests**: Backend Task 2.12
 - **Test Type**: API integration test
 - **Scenarios**:
   - Returns correct version for valid date
@@ -683,7 +683,7 @@ This feature implements comprehensive job description versioning to track JD cha
 #### Subtask 2.6: Test PUT /api/jobs/{jobId} with Version Creation
 
 - **Description**: API integration test for job update triggering version creation
-- **Tests**: Backend Task 2.13, Frontend Task 1.1
+- **Tests**: Backend Task 2.13
 - **Test Type**: API integration test
 - **Scenarios**:
   - Update with JD content change creates new version
@@ -744,7 +744,7 @@ This feature implements comprehensive job description versioning to track JD cha
 #### Subtask 4.1: Test JD Version in Candidate Status History
 
 - **Description**: Integration test for Feature 003 status tracking with JD version reference
-- **Tests**: Backend Task 4.1, Frontend Task 1.5
+- **Tests**: Backend Task 4.1
 - **Test Type**: Integration test (Feature 003 + 009)
 - **Scenarios**:
   - Status change populates `jd_version_id` from interview session

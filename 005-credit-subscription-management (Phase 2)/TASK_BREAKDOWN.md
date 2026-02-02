@@ -1250,7 +1250,7 @@ This task breakdown uses explicit cross-area linkages to show dependencies and r
 
 #### Subtask 3.2: Test Usage Analytics Interaction Flow
 
-- **Description**: E2E test for viewing and filtering usage charts (User Story 2)
+- **Description**: E2E test for viewing and filtering usage chartcjecs (User Story 2)
 - **Test Steps**:
   1. Login as Company Admin
   2. Navigate to usage analytics
