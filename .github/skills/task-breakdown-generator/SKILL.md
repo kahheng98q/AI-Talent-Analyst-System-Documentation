@@ -86,6 +86,7 @@ Use **3 essential linkage types** to show relationships without excessive overhe
 
 For each subtask, include these **essential fields**:
 
+- **Spec Reference**: Which part of the spec this task implements (User Story X.Y, FR-XXX, Feature Section, etc.)
 - **Description**: What is being built (clear and specific)
 - **Depends On**: Other tasks that must complete first
 - **Related**: Connected tasks in other areas (bidirectional)
@@ -96,6 +97,14 @@ For each subtask, include these **essential fields**:
 - **Why**: Business justification (for non-obvious tasks)
 - **Files**: Key files to create/modify
 - **API Details**: Request/response schema (for API endpoints)
+
+**Spec Reference Format Examples**:
+
+- `User Story 1.2` - References a specific user story from the spec
+- `FR-003, FR-007` - References functional requirements
+- `Feature: Interview Workflow` - References a feature section
+- `Entity: Candidate` - References a data model/entity definition
+- `Success Metric: Response time <3s` - References success metrics
 
 ## Output Format
 
@@ -124,6 +133,7 @@ Generate a markdown file with this streamlined structure:
 
 #### Subtask 1.1: [Table name] Table
 
+- **Spec Reference**: Entity: [Entity Name], FR-XXX
 - **Description**: Create migration for [entity] table
 - **Columns**: [Key columns and types]
 - **Indexes**: [Performance indexes]
@@ -138,10 +148,11 @@ Generate a markdown file with this streamlined structure:
 
 **Description**: [What this accomplishes - includes both service logic AND API endpoints]
 
-**Requirement Reference**: [FR-xxx from spec]
+**Spec Reference**: [User Story X.Y, FR-XXX]
 
 #### Subtask 2.1: [Feature] Service Logic
 
+- **Spec Reference**: FR-XXX
 - **Description**: Implement core business logic for [feature]
 - **Methods**: `ServiceName.methodOne()`, `ServiceName.methodTwo()`
 - **Depends On**: Database 1.1
@@ -150,6 +161,7 @@ Generate a markdown file with this streamlined structure:
 
 #### Subtask 2.2: API - GET /api/[resource]
 
+- **Spec Reference**: User Story X.Y
 - **Description**: List [resources] with pagination
 - **Request**: Query params: `page`, `limit`, `filter`
 - **Response**: `{ items: [...], total: number }`
@@ -160,6 +172,7 @@ Generate a markdown file with this streamlined structure:
 
 #### Subtask 2.3: API - POST /api/[resource]
 
+- **Spec Reference**: User Story X.Y
 - **Description**: Create new [resource]
 - **Request**: `{ field1, field2, ... }`
 - **Response**: `{ id, ...created resource }`
@@ -176,10 +189,11 @@ Generate a markdown file with this streamlined structure:
 
 **Description**: [What this accomplishes]
 
-**User Story Reference**: [User Story X from spec]
+**Spec Reference**: [User Story X.Y]
 
 #### Subtask 3.1: [Component/Page Name]
 
+- **Spec Reference**: User Story X.Y, FR-XXX
 - **Description**: Build UI for [feature]
 - **Components**: `ComponentA`, `ComponentB`
 - **Depends On**: Backend 2.2 (API endpoint)
@@ -197,6 +211,7 @@ Generate a markdown file with this streamlined structure:
 
 #### Subtask 4.1: [Test Name]
 
+- **Spec Reference**: User Story X.Y (GWT scenarios), FR-XXX
 - **Description**: [What is being tested]
 - **Covers**: Backend 2.1, Backend 2.2
 - **Type**: Unit / Integration / E2E
@@ -263,18 +278,22 @@ Generate a markdown file with this streamlined structure:
 
 #### Subtask 2.1: Core Service Logic
 
+- **Spec Reference**: FR-005, FR-006
 - CandidateService.create(), .update(), .delete(), .findAll()
 
 #### Subtask 2.2: API - GET /api/candidates
 
+- **Spec Reference**: User Story 2.1
 - Calls CandidateService.findAll()
 
 #### Subtask 2.3: API - POST /api/candidates
 
+- **Spec Reference**: User Story 2.2
 - Calls CandidateService.create()
 
 #### Subtask 2.4: API - PUT /api/candidates/{id}
 
+- **Spec Reference**: User Story 2.3
 - Calls CandidateService.update()
 ```
 
@@ -306,9 +325,12 @@ Generate a markdown file with this streamlined structure:
 
 ### Traceability
 
-- Reference spec sections: "User Story 1.2", "Requirement FR-003"
+- **Always include Spec Reference field**: Link each task to User Story numbers (e.g., "User Story 1.2"), Functional Requirements (e.g., "FR-003"), Feature sections, or Entity definitions from the spec
+- **Use consistent reference format**: Match the numbering/naming scheme used in the source spec document
+- **Multi-reference when needed**: Tasks can reference multiple spec elements (e.g., "User Story 2.1, FR-005, FR-007")
 - Link acceptance criteria to spec Given-When-Then scenarios
 - Preserve spec terminology (entity names, field names)
+- Make it easy for developers to jump back to the spec for context
 
 ## Example Invocations
 
@@ -336,6 +358,7 @@ Generate a markdown file with this streamlined structure:
 ## Tips
 
 - **Read the spec thoroughly** - Extract all entities, requirements, and success metrics
+- **Always add Spec Reference** - Every task should trace back to a specific part of the spec (User Story, FR, Feature, Entity)
 - **Preserve spec language** - Use exact field names, entity names from the spec
 - **Include edge cases** - If spec mentions validation, create subtasks for it
 - **Keep Backend unified** - Service logic and APIs in same section, same main task when related
