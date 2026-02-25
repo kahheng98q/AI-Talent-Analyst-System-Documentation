@@ -5,6 +5,8 @@
 **Status**: Draft  
 **Input**: User description: "Anti-cheating system with tab-switching detection, copy/paste prevention, question time limits, and session integrity auditing to ensure fair and authentic candidate evaluation"
 
+> **Admin Portal Status**: Not Implemented in `ai-talent-analyst-system-admin-portal`. These rules apply to the candidate-facing chatbot app (`atas-chatbot`) and have not been built yet. HR-facing integrity reporting (US4) is also not built.
+
 ## User Scenarios & Testing _(mandatory)_
 
 <!--
@@ -12,7 +14,7 @@
   Each user story/journey must be INDEPENDENTLY TESTABLE.
 -->
 
-### User Story 1 - Tab Switch Detection & Prevention (Priority: P1)
+### User Story 1 - Tab Switch Detection & Prevention (Priority: P1) `❌ Not Implemented`
 
 As the Interview System, I must detect and log when candidates navigate away from the interview tab during active questions, so that HR managers can assess interview authenticity and the system can enforce integrity rules.
 
@@ -34,7 +36,7 @@ As the Interview System, I must detect and log when candidates navigate away fro
 
 ---
 
-### User Story 2 - Disable Copy/Paste Operations (Priority: P1)
+### User Story 2 - Disable Copy/Paste Operations (Priority: P1) `❌ Not Implemented`
 
 As the Interview System, I must prevent candidates from copying interview questions or pasting pre-written answers, so that responses represent authentic, real-time thinking rather than prepared content or AI-generated text.
 
@@ -56,7 +58,7 @@ As the Interview System, I must prevent candidates from copying interview questi
 
 ---
 
-### User Story 3 - Question Time Limits & Auto-Submission (Priority: P1)
+### User Story 3 - Question Time Limits & Auto-Submission (Priority: P1) `❌ Not Implemented`
 
 As the Interview System, I must enforce countdown timers for each interview question and automatically submit answers when time expires, so that all candidates are evaluated under identical time constraints and cannot spend unlimited time crafting perfect answers.
 
@@ -82,7 +84,7 @@ As the Interview System, I must enforce countdown timers for each interview ques
 
 ---
 
-### User Story 4 - Session Integrity Audit & Reporting (Priority: P1)
+### User Story 4 - Session Integrity Audit & Reporting (Priority: P1) `❌ Not Implemented`
 
 As an HR Manager, I want to view a comprehensive integrity report for each candidate's interview session, so that I can assess the reliability of their scores and make informed hiring decisions when integrity violations are detected.
 

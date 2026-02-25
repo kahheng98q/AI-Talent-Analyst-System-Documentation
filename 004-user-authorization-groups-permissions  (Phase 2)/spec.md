@@ -5,6 +5,8 @@
 **Status**: Draft  
 **Input**: User description: "User Authorization, Groups, and Permissions Management System"
 
+> **Status**: Implemented in `ai-talent-analyst-system-back-office`. The back-office portal provides: Groups management (`groups-page.tsx`), Permissions management (`permissions-page.tsx`), User management (`users-page.tsx`), User Assignments (`user-assignments-page.tsx`), and UI Route Permission mapping (`route-permissions-page.tsx`). Backend RBAC models (`AuthGroup`, `AuthPermission`, `UserGroupAssignment`, `UIRoutePermission`, `PermissionAuditLog`) are fully defined in the Django API.
+
 ## User Scenarios & Testing _(mandatory)_
 
 <!--
@@ -12,7 +14,7 @@
   Each user story/journey must be INDEPENDENTLY TESTABLE.
 -->
 
-### User Story 1 - Manage Authorization Groups & Permissions (Priority: P1)
+### User Story 1 - Manage Authorization Groups & Permissions (Priority: P1) `✅ Implemented (Back-Office)`
 
 As a Super Admin (or Company Admin), I want to create groups with specific permission sets (e.g., "Interviewer", "Hiring Manager") so that I can control access to sensitive features and data.
 
@@ -28,7 +30,7 @@ As a Super Admin (or Company Admin), I want to create groups with specific permi
 
 ---
 
-### User Story 2 - Manage Backoffice Staff & Permissions (Priority: P1)
+### User Story 2 - Manage Backoffice Staff & Permissions (Priority: P1) `✅ Implemented (Back-Office)`
 
 As a Backoffice Super Admin, I want to manage the accounts and permissions of my internal team (e.g., creating Support Agents, Sales staff, Developers) so they can access the admin portal with appropriate restrictions.
 
@@ -43,7 +45,9 @@ As a Backoffice Super Admin, I want to manage the accounts and permissions of my
 
 ---
 
-### User Story 3 - Assign Users to Groups (Priority: P1)
+### User Story 3 - Assign Users to Groups (Priority: P1) `🔶 Partially Implemented (Back-Office)`
+
+> **Note**: `user-assignments-page.tsx` renders the assignment UI and reads groups/users from the API, but the save/sync back to the API is still a TODO (`handleUsersChange` only updates local state).
 
 As a Company Admin (or Super Admin), I want to add/remove users from authorization groups so that I can control their access levels, with automatic validation to prevent cross-company or incompatible user type assignments.
 
@@ -62,7 +66,9 @@ As a Company Admin (or Super Admin), I want to add/remove users from authorizati
 
 ---
 
-### User Story 4 - Company Data Isolation (Priority: P1)
+### User Story 4 - Company Data Isolation (Priority: P1) `✅ Implemented (Back-Office)`
+
+> **Note**: Enforced at the API model level via `AuthGroup.can_assign_user()` and `AuthUser.get_groups()`/`get_permissions()` which automatically scope queries to the user's company for client users.
 
 As a Client User, I should only be able to access groups, permissions, and assignments within my own company, ensuring complete data isolation from other client companies. Cross-company access is exclusively reserved for backoffice users.
 
@@ -80,7 +86,9 @@ As a Client User, I should only be able to access groups, permissions, and assig
 
 ---
 
-### User Story 5 - Cross-Company Access for Backoffice (Priority: P1)
+### User Story 5 - Cross-Company Access for Backoffice (Priority: P1) `✅ Implemented (Back-Office)`
+
+> **Note**: Implemented via `AuthPermission.is_cross_company` flag and `AuthUser.has_permission_code()` which performs a second cross-company permission check for backoffice users.
 
 As a Backoffice User (Support/Admin), I want to access data across all client companies when granted cross-company permissions, while respecting company boundaries for standard permissions. This capability is exclusively available to backoffice users - client users are always restricted to their own company.
 
@@ -98,7 +106,7 @@ As a Backoffice User (Support/Admin), I want to access data across all client co
 
 ---
 
-### User Story 6 - View and Audit Permission Assignments (Priority: P2)
+### User Story 6 - View and Audit Permission Assignments (Priority: P2) `❌ Not Implemented`
 
 As an Admin, I want to view which permissions a specific user has (across all their groups) so that I can audit access levels and understand effective permissions including user type and company restrictions.
 
@@ -115,7 +123,9 @@ As an Admin, I want to view which permissions a specific user has (across all th
 
 ---
 
-### User Story 7 - Define Custom Permissions (Priority: P2)
+### User Story 7 - Define Custom Permissions (Priority: P2) `✅ Implemented (Back-Office)`
+
+> **Note**: `permissions-page.tsx` (`PermissionManager` component) provides full CRUD for `AuthPermission` records, including resource, action, category, applicable_user_type, and is_cross_company fields.
 
 As a Super Admin, I want to define new permissions (e.g., `report.export`, `invoice.manage`) with appropriate user type restrictions and cross-company flags so that I can extend the authorization system as the platform grows.
 
@@ -132,7 +142,7 @@ As a Super Admin, I want to define new permissions (e.g., `report.export`, `invo
 
 ---
 
-### User Story 8 - Prevent Orphaned Permissions (Priority: P2)
+### User Story 8 - Prevent Orphaned Permissions (Priority: P2) `❌ Not Implemented`
 
 As a System, I must ensure that deleted groups don't leave users without necessary access.
 
@@ -147,7 +157,9 @@ As a System, I must ensure that deleted groups don't leave users without necessa
 
 ---
 
-### User Story 9 - Frontend Permission Integration (Priority: P1)
+### User Story 9 - Frontend Permission Integration (Priority: P1) `🔶 Partially Implemented (Back-Office)`
+
+> **Note**: The back-office has `usePermissions`, `useGroups`, `useUIRoutePermissions` hooks connected to the API, and a `PermissionGuard` component for route guarding. The `PermissionProvider` context provides permission-aware UI rendering. However, the client admin portal (`ai-talent-analyst-system-admin-portal`) has not yet integrated these permission APIs.
 
 As a Frontend Developer, I want efficient APIs to retrieve user permissions and metadata so that I can render permission-aware UI components (hide/disable buttons, conditional routes, masked fields) without making excessive backend calls.
 
@@ -169,7 +181,9 @@ As a Frontend Developer, I want efficient APIs to retrieve user permissions and 
 
 ---
 
-### User Story 10 - UI Route Permission Mapping (Priority: P2)
+### User Story 10 - UI Route Permission Mapping (Priority: P2) `✅ Implemented (Back-Office)`
+
+> **Note**: `route-permissions-page.tsx` (`RoutePermissionManager` component) provides full CRUD for `UIRoutePermission` records, including route path, service_type (client/bo), permission_mode (ALL/ANY), ui_component_type, and required_permissions (M2M).
 
 As a System Administrator, I want to centrally define which permissions are required for each UI route/page so that frontend developers can fetch permission requirements declaratively and users are prevented from accessing pages they lack permissions for.
 
@@ -190,7 +204,9 @@ As a System Administrator, I want to centrally define which permissions are requ
 
 ---
 
-### User Story 11 - Assign Permissions to Backoffice and Client Users Based on UI Route Mapping (Priority: P2)
+### User Story 11 - Assign Permissions to Backoffice and Client Users Based on UI Route Mapping (Priority: P2) `🔶 Partially Implemented (Back-Office)`
+
+> **Note**: Route permission definitions are manageable via the back-office. User-to-group assignment sync to API is still pending (US3 TODO). The enforcement logic (checking route permissions before rendering) is partially wired in the back-office via `PermissionGuard`, but not yet in the client admin portal.
 
 As a System Administrator or Company Admin, I want to assign specific permissions to Backoffice and Client users based on the defined UI routes so that access control is tailored to user roles, ensuring that users can only access the functionalities relevant to their responsibilities.
 
@@ -213,7 +229,9 @@ As a System Administrator or Company Admin, I want to assign specific permission
 
 ---
 
-### User Story 12 - Manage Temporary Permission Assignments (Priority: P2)
+### User Story 12 - Manage Temporary Permission Assignments (Priority: P2) `✅ Implemented (Back-Office)`
+
+> **Note**: `UserGroupAssignment` model has `expires_at` (nullable) and `is_active` fields. The `AuthUser.get_groups()` query filters out expired assignments using `Q(expires_at__isnull=True) | Q(expires_at__gt=now)`. UI for setting expiry dates is available in `user-assignments-page.tsx`.
 
 As an Admin, I want to assign users to groups with expiration dates so that I can grant temporary access (e.g., contractors, interns) that automatically revokes after a set period.
 
@@ -274,11 +292,14 @@ As an Admin, I want to assign users to groups with expiration dates so that I ca
 
 ### Key Entities
 
-- **AuthGroup**: Custom authorization group model. Attributes: `id`, `name`, `description`, `company_id` (nullable for global groups), `applicable_user_type` (enum: `client`, `backoffice`, `both`), `is_system_critical` (boolean), `created_by`, `created_at`, `updated_at`.
-- **AuthPermission**: Custom permission model using `resource.action` format. Attributes: `id`, `resource` (e.g., "candidate"), `action` (e.g., "view"), `description`, `applicable_user_type` (enum: `client`, `backoffice`, `both`), `is_cross_company` (boolean), `created_at`.
-- **UserGroupAssignment**: Junction table linking users to groups with audit trail. Attributes: `id`, `user_id`, `group_id`, `assigned_by`, `assigned_at`, `expires_at` (nullable), `is_active` (boolean), `notes`.
-- **UIRoutePermission**: Maps frontend routes to required permissions. Attributes: `id`, `route` (e.g., `/candidates/:id`), `required_permissions` (JSON array of permission strings), `permission_mode` (enum: `ALL`, `ANY`), `description`, `ui_component_type` (enum: `page`, `modal`, `tab`, `section`), `is_active` (boolean), `created_at`, `updated_at`, `created_by`.
-- **PermissionAuditLog**: Audit trail for all permission-related changes. Attributes: `id`, `action_type` (enum: `group_created`, `permission_assigned`, `user_assigned`, etc.), `actor_id`, `target_user_id` (nullable), `target_group_id` (nullable), `old_value`, `new_value`, `timestamp`, `ip_address`, `user_agent`.
+- **AuthGroup** (`public.atas_auth_group`): `id`, `name`, `description`, `company` (FK, nullable for global groups), `applicable_user_type` (enum: `client`, `backoffice`, `both`, default: `client`), `is_system_critical` (boolean), `permissions` (M2M → `AuthPermission`), `created_by` (FK → `AuthUser`), `created_at`, `updated_at`. Managed via `groups-page.tsx`.
+- **AuthPermission** (`public.atas_auth_permission`): `id`, `name` (unique), `resource` (e.g., `candidate`), `action` (e.g., `view`), `description`, `ui_label`, `category` (user/candidate/job/interview/report/company/admin), `api_type` (client/backoffice/both), `api_endpoint`, `applicable_user_type` (client/backoffice/both), `is_cross_company` (boolean), `is_active` (boolean), `updated_by`, `created_at`. Unique on `(resource, action)`. Managed via `permissions-page.tsx`.
+- **UserGroupAssignment** (`public.atas_user_group_assignment`): `user` (FK → `AuthUser`), `group` (FK → `AuthGroup`), `assigned_by` (FK → `AuthUser`), `assigned_at`, `expires_at` (nullable — for temporary assignments), `is_active` (boolean), `notes`. Unique on `(user, group)`. Managed via `user-assignments-page.tsx`.
+- **UIRoutePermission** (`public.atas_ui_route_permission`): `id`, `route` (e.g., `/candidates/:id`), `service_type` (enum: `client`, `bo`), `required_permissions` (M2M → `AuthPermission`), `permission_mode` (enum: `ALL`, `ANY`), `ui_component_type` (page/modal/tab/section), `description`, `is_active` (boolean), `created_by`, `created_at`, `updated_at`. Unique on `(route, service_type)`. Managed via `route-permissions-page.tsx`.
+- **PermissionAuditLog** (`public.atas_permission_audit_log`): `id`, `action_type` (enum: group_created/group_updated/group_deleted/permission_created/permission_updated/user_assigned/user_unassigned/permission_added_to_group/permission_removed_from_group/ui_route_created/ui_route_updated/ui_route_deleted), `actor` (FK → `AuthUser`), `target_user` (FK, nullable), `target_group` (FK, nullable), `target_permission` (FK, nullable), `target_ui_route` (FK, nullable), `old_value` (JSON), `new_value` (JSON), `description`, `ip_address`, `user_agent`, `timestamp`.
+- **AuthUser** (`public.auth_user`): `email`, `username`, `user_type` (client/backoffice), `first_name`, `last_name`, `is_active`, `is_superuser`, `joined_date`, `last_login`.
+- **BackofficeUser** profile (`public.bo_user_profile`): `user` (OneToOne PK), `employee_id`, `role` (admin/manager/analyst/support/viewer), `department`, `access_level` (1–5), `status` (active/inactive/suspended/pending), `phone`, `notes`.
+- **ClientUser** profile (`public.client_user`): `user` (OneToOne PK), `company` (FK), `permission_level` (owner/admin/manager/member/viewer), `status` (active/inactive/suspended/trial/expired), `subscription_tier`, `max_sessions`, `sessions_used`.
 
 ### Implementation Notes (Current Build)
 

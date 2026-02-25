@@ -3,8 +3,10 @@
 **Feature Branch**: `002-saas-admin-portal`
 
 **Created**: 2025-11-05
-**Status**: Draft
+**Status**: In Progress
 **Input**: User description: "SaaS Admin Portal for Company, User, and System Management"
+
+> **Portal Scope Clarification**: This feature covers **Back-Office** (Super Admin) capabilities for onboarding companies. The **Company HR Admin Portal** (`ai-talent-analyst-system-admin-portal`, port 8032) is the tenant-facing portal used by HR users — its scope falls under Feature 007 (Company Admin Self Service) and Feature 001 (AI HR Interview System). Super Admin company management is handled in `ai-talent-analyst-system-back-office`.
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -15,7 +17,7 @@
 
 ### A. Super Admin - Tenant & User Management
 
-### User Story 1 - Create New Company (Priority: P1)
+### User Story 1 - Create New Company (Priority: P1) `✅ Implemented (Back-Office)`
 
 As a Super Admin, I want to onboard a new customer by creating a company profile.
 
@@ -28,7 +30,7 @@ As a Super Admin, I want to onboard a new customer by creating a company profile
 1. **Given** I am logged in as a Super Admin, **When** I navigate to "Companies" > "Add New" and submit valid details (Name, Domain, Plan), **Then** the new company should appear in the company list and be active.
 2. **Given** I am on the "Add New Company" page, **When** I submit with a duplicate domain, **Then** the system should show an error preventing creation.
 
-### User Story 2 - Create Company Admin (Priority: P1)
+### User Story 2 - Create Company Admin (Priority: P1) `✅ Implemented (Back-Office)`
 
 As a Super Admin, I want to assign an admin to a company so they can manage their team.
 
@@ -41,7 +43,7 @@ As a Super Admin, I want to assign an admin to a company so they can manage thei
 1. **Given** a Company exists, **When** I create a new User and assign the "Company Admin" role linked to that Company, **Then** the user should be successfully created and linked.
 2. **Given** the new Company Admin user, **When** they log in, **Then** they should have access to the Company Admin portal for their specific company.
 
-### User Story 4 - Manage Client Company Super Admins (Priority: P2)
+### User Story 4 - Manage Client Company Super Admins (Priority: P2) `❌ Not Implemented (Back-Office)`
 
 As a Backoffice Super Admin, I want to manage the designated "Super Admin" for a specific client company (e.g., reset their credentials, changing the owner) so that I can resolve high-level access issues or security incidents.
 
@@ -74,10 +76,12 @@ As a Backoffice Super Admin, I want to manage the designated "Super Admin" for a
 
 ### Key Entities
 
-- **Company**: Tenant organization with domain and status.
-- **User**: System user with Role and Company linkage (Soft Delete required for audit trails).
-- **Plan**: Subscription tier with Limits (managed in Feature 005).
-- **CompanyAdmin**: Special User role with company management permissions.
+- **Company** (`atas.companies`): `id`, `name`, `industry`, `location`, `phone`, `email`, `created_by`, `updated_by`, `created_at`, `updated_at`, `deleted_at` (soft-delete).
+- **AuthUser** (`public.auth_user`): `email`, `username`, `user_type` (enum: `client` / `backoffice`), `first_name`, `last_name`, `is_active`, `is_superuser`, `joined_date`, `last_login`. Managed via back-office `users-page.tsx`.
+- **BackofficeUser** profile (`public.bo_user_profile`): Extends `AuthUser` for back-office staff. `user` (OneToOne PK), `employee_id`, `role` (admin/manager/analyst/support/viewer), `department`, `access_level` (1–5), `status` (active/inactive/suspended/pending), `phone`, `notes`, `created_by`.
+- **ClientUser** profile (`public.client_user`): Extends `AuthUser` for company HR users. `user` (OneToOne PK), `company` (FK), `permission_level` (owner/admin/manager/member/viewer), `status` (active/inactive/suspended/trial/expired), `subscription_tier` (free/basic/professional/enterprise), `max_sessions`, `sessions_used`, `subscription_start_date`, `subscription_end_date`, `invited_by`, `position`.
+
+> **Not Yet Implemented**: `Plan` as a standalone entity — subscription plans live in `atas.subscription_plans` (Feature 005). `CompanyAdmin` is not a separate model; it is expressed via `ClientUser.permission_level = 'admin'`.
 
 ### Dependencies
 

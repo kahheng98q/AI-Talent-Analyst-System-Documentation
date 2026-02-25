@@ -5,6 +5,8 @@
 **Status**: Draft  
 **Input**: User description: "Add job description versioning to track JD changes, lock versions during interview sessions, support rollback, and provide audit trails for compliance and fair candidate evaluation."
 
+> **Admin Portal Status**: Partially implemented. A version history UI panel exists in `job-description-details-view.tsx` but currently uses hardcoded mock data (`MOCK_VERSIONS` array) — it is NOT connected to a real API. US2–US4 are not implemented.
+
 ## Clarifications
 
 ### Session 2026-01-13
@@ -18,7 +20,9 @@
 
 ## User Scenarios & Testing _(mandatory)_
 
-### User Story 1 - HR Updates Job Description & Creates Version (Priority: P1)
+### User Story 1 - HR Updates Job Description & Creates Version (Priority: P1) `🔶 Partially Implemented`
+
+> Version history UI panel exists in the JD details page, but uses `MOCK_VERSIONS` hardcoded data — not connected to a real API. Editing the JD form is functional but does not persist versioning.
 
 As an HR manager, I want to update a job description during active recruitment, so that I can refine requirements while maintaining audit history of all changes.
 
@@ -40,7 +44,7 @@ As an HR manager, I want to update a job description during active recruitment, 
 
 ---
 
-### User Story 2 - Lock JD Version for Interview Session (Priority: P1)
+### User Story 2 - Lock JD Version for Interview Session (Priority: P1) `❌ Not Implemented`
 
 As the system, I must capture and lock the current JD version when a candidate opens an interview, so that resume scoring and question generation use the same JD version throughout the interview session.
 
@@ -62,7 +66,7 @@ As the system, I must capture and lock the current JD version when a candidate o
 
 ---
 
-### User Story 3 - View & Compare JD Versions (Priority: P2)
+### User Story 3 - View & Compare JD Versions (Priority: P2) `❌ Not Implemented`
 
 As an HR manager, I want to see a detailed history of how the job description has changed and compare versions, so I can understand what requirements changed and how they affected candidate pool.
 
@@ -86,7 +90,7 @@ As an HR manager, I want to see a detailed history of how the job description ha
 
 ---
 
-### User Story 4 - Rollback & Version Management (Priority: P2)
+### User Story 4 - Rollback & Version Management (Priority: P2) `❌ Not Implemented`
 
 As an HR manager, I want to revert to a previous job description version if I made a mistake or want to test an earlier version, so I can recover from errors without manual workarounds.
 

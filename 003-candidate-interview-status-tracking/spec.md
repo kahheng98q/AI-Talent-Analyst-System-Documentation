@@ -5,6 +5,8 @@
 **Status**: Draft  
 **Input**: User description: "add status of the candidate interview status, so the HR can trace back"
 
+> **Admin Portal Note**: The admin portal currently tracks **Interview Session** statuses (Upcoming, In Progress, Completed, Expired, Cancelled) as part of Feature 001. Candidate-level status tracking (this feature) has NOT been implemented in the admin portal yet.
+
 ## User Scenarios & Testing _(mandatory)_
 
 <!--
@@ -13,7 +15,7 @@
   you should still have a viable MVP (Minimum Viable Product) that delivers value.
 -->
 
-### User Story 1 - View and Update Candidate Status (Priority: P1)
+### User Story 1 - View and Update Candidate Status (Priority: P1) `❌ Not Implemented`
 
 As an HR personnel, I want to see the current interview status of a candidate and be able to update it, so that I can track their progress in the hiring pipeline.
 
@@ -28,7 +30,7 @@ As an HR personnel, I want to see the current interview status of a candidate an
 
 ---
 
-### User Story 2 - Trace Status History (Priority: P2)
+### User Story 2 - Trace Status History (Priority: P2) `❌ Not Implemented`
 
 As an HR personnel, I want to see the history of status changes for a candidate, including who changed it and when, so that I can audit the recruitment process.
 

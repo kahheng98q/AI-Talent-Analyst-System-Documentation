@@ -6,6 +6,8 @@
 **Status**: Draft
 **Input**: Extracted from Feature 002 - Company Admin self-service capabilities
 
+> **Admin Portal Status**: Not Implemented in `ai-talent-analyst-system-admin-portal`. The admin portal currently covers Feature 001 (interview management) only. User management, invitations, and subscription management via this portal are pending.
+
 ## User Scenarios & Testing _(mandatory)_
 
 <!--
@@ -13,7 +15,7 @@
   Each user story/journey must be INDEPENDENTLY TESTABLE.
 -->
 
-### User Story 1 - Manage HR Users (Priority: P2)
+### User Story 1 - Manage HR Users (Priority: P2) `❌ Not Implemented`
 
 As a Company Admin, I want to manage my team's access.
 
@@ -26,7 +28,7 @@ As a Company Admin, I want to manage my team's access.
 1. **Given** I am a Company Admin, **When** I view my user list, **Then** I should see all users belonging to my company.
 2. **Given** an employee has left, **When** I remove/deactivate their user account, **Then** they should no longer be able to log in.
 
-### User Story 2 - Invite Users (Priority: P2)
+### User Story 2 - Invite Users (Priority: P2) `❌ Not Implemented`
 
 As a Company Admin, I want to invite colleagues via email.
 
@@ -40,7 +42,7 @@ As a Company Admin, I want to invite colleagues via email.
 2. **Given** an uninvited user, **When** they try to register, **Then** they should be blocked (assuming closed registration).
 3. **Given** a user with an invite link, **When** they complete the form, **Then** they should be able to set a password and join the company.
 
-### User Story 3 - Manage Subscription (Priority: P1)
+### User Story 3 - Manage Subscription (Priority: P1) `❌ Not Implemented`
 
 As a Company Admin, I want to upgrade my plan to access more features.
 

@@ -2,8 +2,10 @@
 
 **Feature Branch**: `001-ai-hr-interview-system`
 **Created**: 2025-11-05
-**Status**: Draft
+**Status**: In Progress
 **Input**: User description: "Generate a detailed specification for an AI-powered HR Interview System that allows HR teams to create job descriptions, schedule interviews, invite candidates, conduct AI-led interviews, and review analytical results. Include features such as question generation, scoring by competency, adaptive questioning, candidate ranking, and PDF reporting."
+
+> **Admin Portal**: `ai-talent-analyst-system-admin-portal` (port 8032) — Company HR admin portal. This is the primary UI for HR users to manage job positions, interview sessions, and candidates.
 
 ## Clarifications
 
@@ -15,9 +17,18 @@
 - Q: How are the unique interview links secured to prevent unauthorized access or use? → A: Links require candidate authentication (e.g., email verification, password) before accessing the interview.
 - Q: How are the "predefined competencies" managed and defined within the system? → A: Competencies are fixed and hardcoded within the system, applied universally to all jobs.
 
+### Implementation Behavior Updates (Verified 2026-02-25)
+
+- **Job Description Form**: HR enters structured fields — Job Title, Min/Max Salary, Role Overview Description, Core Responsibilities (each with Management Level L1–L5, Description, and Result Intended), Qualifications, and Required Skills. There is no file upload for JD. AI generates interview questions from this structured content.
+- **Interview Invitation Flow (Changed)**: HR does NOT bulk-invite candidates by email. The actual flow is: (1) Create a Candidate record (name, phone, email, DOB, gender, nationality, country), (2) Create an Interview Session linking that Candidate + Job Position + Scheduled Date/Time, (3) Send the interview link via the "Send Interview Link" button on the session details page. The link is a session-specific token URL.
+- **Interview Session Statuses**: `Upcoming` (ID: 4), `In Progress` (ID: 10), `Completed` (ID: 6), `Cancelled` (ID: 8), `Expired` (ID: 11).
+- **Scoring System (Changed from generic competencies)**: Total Score = weighted sum: Interview Score 50% + Resume Score 30% + Salary Match Score 20%. Aspect Scores (Knowledge, Experience, Potential, Culture) are each scored /5 and displayed separately.
+- **Candidate Ranking**: Completed sessions are listed on the Job Description details page with scores for HR comparison. There is no separate "Rankings" page.
+- **Chatbot**: The candidate-facing interview experience (resume upload, AI-led interview Q&A) is handled by a separate application (`atas-chatbot`), not the admin portal.
+
 ## User Scenarios & Testing _(mandatory)_
 
-### User Story 1 - HR Creates and Manages a Job Position (Priority: P1)
+### User Story 1 - HR Creates and Manages a Job Position (Priority: P1) `✅ Implemented`
 
 As an HR manager, I want to create a new job position in the system, including a detailed job description, so that I can start the recruitment process.
 
@@ -27,12 +38,14 @@ As an HR manager, I want to create a new job position in the system, including a
 
 **Acceptance Scenarios**:
 
-1.  **Given** I am logged in as an HR manager, **When** I navigate to the "Jobs" section and click "Create New Job", **Then** I am presented with an option to upload the Job Description (JD).
-2.  **Given** I have filled out the job creation form, **When** I click "Save", **Then** the new job position is created and visible in the list of open positions.
+1.  **Given** I am logged in as an HR manager, **When** I navigate to "Job Position" > "Create", **Then** I am presented with a structured form (not a file upload) with fields: Job Title, Min/Max Salary, Role Overview Description, Core Responsibilities (management level L1–L5, description, result intended), Qualifications, and Required Skills.
+2.  **Given** I have filled out the job creation form, **When** I click "Confirm", **Then** the new job position is created and I am redirected to the job detail page. The job appears in the Job Position list.
+
+> **Behavior Change**: Original spec described uploading a JD file. Actual implementation uses a structured form. AI generates interview questions from the structured fields.
 
 ---
 
-### User Story 2 - HR Updates Job Description Status (Priority: P2)
+### User Story 2 - HR Updates Job Description Status (Priority: P2) `❌ Not Implemented`
 
 As an HR manager, I want to update the status of a job description (e.g., "Open", "Filled", "On Hold"), so that I can manage the recruitment pipeline effectively.
 
@@ -47,24 +60,28 @@ As an HR manager, I want to update the status of a job description (e.g., "Open"
 
 ---
 
-### User Story 3 - HR Invites Candidates to an AI-Led Interview (Priority: P1)
+### User Story 3 - HR Invites Candidates to an AI-Led Interview (Priority: P1) `🔶 Behavior Changed`
 
 As an HR manager, I want to invite candidates to take an AI-led interview for a specific job position, so that I can efficiently screen a large number of applicants.
 
 **Why this priority**: This is a core feature of the AI-powered system.
 
-**Independent Test**: An HR manager can send an interview invitation to a candidate, and the candidate receives an email with a link to the interview.
+**Independent Test**: An HR manager can schedule an interview session for a candidate and send them the unique interview link.
 
 **Acceptance Scenarios**:
 
-1.  **Given** I have a created job position, **When** I select the job and click "Invite Candidates", **Then** I can enter a list of candidate email addresses.
-2.  **Given** I have entered the candidate emails, **When** I click "Send Invitations", **Then** each candidate receives a personalized email with a unique link to the AI-led interview.
+1.  **Given** I have a created job position and a candidate record, **When** I navigate to "Sessions" > "Create" and select the Candidate, Job Position, and Scheduled Date/Time, **Then** an interview session is created with status "Upcoming".
+2.  **Given** an interview session exists, **When** I open the session details and click "Send Interview Link", **Then** the candidate receives an email with a unique session token URL to access their AI-led interview.
+
+> **Behavior Change**: Original spec described bulk email invite by entering email addresses. Actual implementation requires: (1) pre-existing Candidate record, (2) creating an Interview Session, (3) manually sending the link via "Send Interview Link" button. There is no bulk invite screen.
 
 ---
 
-### User Story 4 - Candidate Uploads Resume for AI Assessment (Priority: P1)
+### User Story 4 - Candidate Uploads Resume for AI Assessment (Priority: P1) `✅ Implemented (Chatbot)`
 
 As a candidate, I want to upload my resume after receiving the interview link, so that the system can pre-assess my qualifications against the job description.
+
+> **Note**: This user story is implemented in the `atas-chatbot` application (candidate-facing), not the admin portal.
 
 **Why this priority**: This enhances the screening process by providing an initial data point before the interview.
 
@@ -78,9 +95,11 @@ As a candidate, I want to upload my resume after receiving the interview link, s
 
 ---
 
-### User Story 5 - Candidate Completes an AI-Led Interview (Priority: P1)
+### User Story 5 - Candidate Completes an AI-Led Interview (Priority: P1) `✅ Implemented (Chatbot)`
 
 As a candidate, I want to complete an AI-led interview, so that I can be considered for the job position.
+
+> **Note**: This user story is implemented in the `atas-chatbot` application (candidate-facing), not the admin portal.
 
 **Why this priority**: This is the primary interaction for the candidate.
 
@@ -94,22 +113,24 @@ As a candidate, I want to complete an AI-led interview, so that I can be conside
 
 ---
 
-### User Story 6 - HR Reviews Interview Results and Rankings (Priority: P2)
+### User Story 6 - HR Reviews Interview Results and Rankings (Priority: P2) `✅ Implemented`
 
 As an HR manager, I want to review the results of the AI-led interviews, including competency scores and candidate rankings, so that I can identify the most promising candidates.
 
 **Why this priority**: This feature provides the primary value to the HR team.
 
-**Independent Test**: An HR manager can view a ranked list of candidates for a job position, with detailed scores for each competency.
+**Independent Test**: An HR manager can view completed sessions for a job position and click into a session to see full scoring details.
 
 **Acceptance Scenarios**:
 
-1.  **Given** that candidates have completed their interviews, **When** I navigate to the "Results" section for a job position, **Then** I see a ranked list of candidates based on their overall scores.
-2.  **Given** I am viewing the ranked list, **When** I click on a candidate, **Then** I can see a detailed breakdown of their scores for each competency, along with their answers.
+1.  **Given** that candidates have completed their interviews, **When** I navigate to the Job Position details page, **Then** I see a list of completed interview sessions for that job position with scores.
+2.  **Given** I am viewing a completed session, **When** I click into the session details, **Then** I can see: Overall Score (0–100), Interview Score (50% weight), Resume Score (30% weight), Salary Match Score (20% weight), Aspect Scores (Knowledge, Experience, Potential, Culture each rated /5), Interview Analysis (Strengths, Development Gaps, Personal Development Plan), and full Chat History of Q&A per aspect.
+
+> **Behavior Change**: There is no dedicated "Rankings" page. Completed sessions are listed on the Job Description details page (Completed Interviews section). The Session List page (`/dashboard/interview-session/list`) also shows all sessions with tabs for Upcoming / In Progress / Completed / Expired / Cancelled. Scoring system: Total Score = Interview Score (50%) + Resume Score (30%) + Salary Match Score (20%). Aspect Scores: Knowledge, Experience, Potential, Culture.
 
 ---
 
-### User Story 7 - HR Generates a PDF Report of Interview Results (Priority: P2)
+### User Story 7 - HR Generates a PDF Report of Interview Results (Priority: P2) `❌ Not Implemented`
 
 As an HR manager, I want to generate a PDF report of the interview results for a candidate, so that I can share it with the hiring team.
 
@@ -124,7 +145,7 @@ As an HR manager, I want to generate a PDF report of the interview results for a
 
 ---
 
-### User Story 8 - HR Reviews AI Token Usage (Priority: P3)
+### User Story 8 - HR Reviews AI Token Usage (Priority: P3) `❌ Not Implemented`
 
 As an HR manager, I want to see how many AI tokens are being consumed by the various AI-powered features, so that I can monitor costs and usage.
 
@@ -167,14 +188,14 @@ As an HR manager, I want to see how many AI tokens are being consumed by the var
 
 ### Key Entities _(include if feature involves data)_
 
-- **Job Position**: Represents a job opening with a title, description, and a **status**. Competencies are fixed and hardcoded, not associated with individual job positions.
-- **Candidate**: Represents a person who is being considered for a job, with a name and email address.
-- **Interview**: Represents a single interview session for a candidate for a specific job position, containing the questions asked, the candidate\'s answers, the resulting scores, and a **resume assessment score**.
-- **Competency**: Represents a fixed, hardcoded skill or quality that is being assessed, such as "Communication" or "Problem Solving".
+- **JobDescription** (`atas.job_descriptions`): `id`, `job_title`, `exp_min_salary`, `exp_max_salary`, `role_overview` (text), `core_responsibilities` (JSONField — array of objects: management level L1–L5, description, result intended), `qualifications` (JSONField — array), `skills_required` (JSONField — array), `company` (FK), `current_version` (FK → `JobDescriptionVersion`), `version_count`, `created_by`, `created_at`, `updated_at`, `deleted_at` (soft-delete). No status field.
+- **Candidate** (`atas.candidates`): `id`, `name`, `gender`, `dob`, `email`, `nationality`, `country`, `phone`, `company` (FK), `status_id`, `created_by`, `created_at`, `updated_at`, `deleted_at` (soft-delete).
+- **Session** (`atas.sessions`): `id`, `candidate` (FK), `job_description` (FK), `jd_version` (FK — locked at interview start via `jd_locked_at`), `status` (FK → `Status` module=SESSION: Upcoming/InProgress/Completed/Expired/Cancelled), `scheduled_at`, `started_at`, `ended_at`, `interview_score` (float 0–100, weighted from aspect scores), `jd_resume_score` (float), `salary_score` (float), `total_score` (float — Interview 50% + Resume 30% + Salary 20%), `resume_score_analysis` (text), `interview_analysis` (JSONField — `strengths[]`, `development_gaps[]`, `personal_development_plan[]`), `chat_history` (JSONField — per-aspect Q&A with `aspect`, `score` fields), `resume` (FK), `token_hash`, `token_expires_at`, `company` (FK), `created_by`, `created_at`, `updated_at`, `deleted_at` (soft-delete).
+- **Resume** (`atas.resumes`): `id`, `candidate` (FK), `job_title`, `skills`, `experience_working`, `experience_title`, `content` (parsed full text), `exp_salary`, `sourcefile_name`, `company` (FK), `status_id`, `created_by`, `created_at`, `updated_at`, `deleted_at` (soft-delete).
+- **CompanyAspect** (`atas.company_aspects`): Per-company interview aspect configuration. `company` (FK), `aspect` (FK → `Aspect` — e.g. Knowledge/Experience/Potential/Culture), `aspect_order`, `max_questions`, `max_followups`, `is_active`. Drives which aspects are scored per interview.
+- **Status** (`atas.statuses`): Lookup table. `id`, `name`, `code`, `module` (SESSION/JOB_DESCRIPTION/SUBSCRIPTION/TOPUP_REQUEST), `color_hex`, `order`.
 
-- **Question**: Represents a single interview question.
-- **Result**: Represents the outcome of an interview, including the overall score and a breakdown of scores by competency.
-- **TokenUsage**: Represents the AI token consumption for a specific action, including the number of tokens used and the associated cost.
+> **Not Yet Implemented**: `Question`, `Result`, and `TokenUsage` entities described in the original spec do not have corresponding API models and have not been built.
 
 ## Assumptions
 

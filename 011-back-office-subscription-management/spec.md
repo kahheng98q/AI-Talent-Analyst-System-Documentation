@@ -5,9 +5,11 @@
 **Status**: Draft  
 **Input**: User description: "Back-office admin portal for managing company subscriptions, processing bank transfer payments, crediting accounts, viewing usage analytics, handling refunds, and monitoring system-wide billing operations."
 
+> **Scope: Back-Office Portal** — These features are for `ai-talent-analyst-system-back-office`, not the HR admin portal. None of these User Stories are implemented yet.
+
 ## User Scenarios & Testing _(mandatory)_
 
-### User Story 1 - View All Companies with Subscription Status (Priority: P1)
+### User Story 1 - View All Companies with Subscription Status (Priority: P1) `❌ Not Implemented`
 
 Back-office admins need a centralized dashboard to view all companies, their subscription tier, quota usage, account balance, and payment status to monitor system health and identify companies needing attention.
 
@@ -31,7 +33,7 @@ Back-office admins need a centralized dashboard to view all companies, their sub
 
 ---
 
-### User Story 2 - Process Bank Transfer Payments & Credit Accounts (Priority: P1)
+### User Story 2 - Process Bank Transfer Payments & Credit Accounts (Priority: P1) `❌ Not Implemented`
 
 Back-office admins need to manually process bank transfer receipts for subscription payments, balance top-ups, and individual interview purchases by crediting company accounts and updating quotas.
 
@@ -65,7 +67,7 @@ Back-office admins need to manually process bank transfer receipts for subscript
 
 ---
 
-### User Story 3 - View & Manage Company Subscription Details (Priority: P1)
+### User Story 3 - View & Manage Company Subscription Details (Priority: P1) `❌ Not Implemented`
 
 Back-office admins need detailed view of individual company subscription history, quota consumption timeline, balance transactions, and ability to perform administrative actions like manual adjustments or plan changes.
 
@@ -110,7 +112,7 @@ Back-office admins need detailed view of individual company subscription history
 
 ---
 
-### User Story 4 - View System-Wide Analytics & Revenue Reports (Priority: P1)
+### User Story 4 - View System-Wide Analytics & Revenue Reports (Priority: P1) `❌ Not Implemented`
 
 Back-office admins need aggregate analytics across all companies to track revenue, subscription distribution, quota consumption trends, and identify business insights for decision-making.
 
@@ -154,7 +156,7 @@ Back-office admins need aggregate analytics across all companies to track revenu
 
 ---
 
-### User Story 5 - Manage Subscription Lifecycle (Upgrades, Downgrades, Suspensions, Cancellations) (Priority: P2)
+### User Story 5 - Manage Subscription Lifecycle (Upgrades, Downgrades, Suspensions, Cancellations) (Priority: P2) `❌ Not Implemented`
 
 Back-office admins need ability to manually process subscription plan changes, calculate prorated charges/refunds, suspend accounts for non-payment, and handle cancellation requests with proper quota and billing adjustments.
 
@@ -212,7 +214,7 @@ Back-office admins need ability to manually process subscription plan changes, c
 
 ---
 
-### User Story 6 - View & Search Billing Transactions Across All Companies (Priority: P2)
+### User Story 6 - View & Search Billing Transactions Across All Companies (Priority: P2) `❌ Not Implemented`
 
 Back-office admins need a global billing transactions view to search, filter, and export transaction history across all companies for accounting reconciliation, audit purposes, and financial reporting.
 
@@ -236,7 +238,7 @@ Back-office admins need a global billing transactions view to search, filter, an
 
 ---
 
-### User Story 7 - Monitor & Manage Quota Reservations (Priority: P3)
+### User Story 7 - Monitor & Manage Quota Reservations (Priority: P3) `❌ Not Implemented`
 
 Back-office admins need visibility into active quota reservations system-wide to identify stale reservations, manually release stuck reservations, and monitor reservation-to-completion conversion rates for system health.
 

@@ -6,6 +6,8 @@
 **Status**: Draft
 **Input**: Extracted from Feature 002 - Super Admin System & AI Management capabilities
 
+> **Admin Portal Status**: Not Implemented in `ai-talent-analyst-system-admin-portal`. This is a back-office Super Admin feature.
+
 ## User Scenarios & Testing _(mandatory)_
 
 <!--
@@ -13,7 +15,7 @@
   Each user story/journey must be INDEPENDENTLY TESTABLE.
 -->
 
-### User Story 1 - System Dashboard (Priority: P2)
+### User Story 1 - System Dashboard (Priority: P2) `❌ Not Implemented`
 
 As a Super Admin, I want a high-level view of system health and revenue.
 
@@ -26,7 +28,7 @@ As a Super Admin, I want a high-level view of system health and revenue.
 1. **Given** I am on the Super Admin home page, **When** the dashboard loads, **Then** I should see current MRR, Token Burn Rate, and Live AI Success Rate.
 2. **Given** new tenants have joined, **When** I view the "Tenant Growth" chart, **Then** it should reflect the recent sign-ups.
 
-### User Story 2 - AI Configuration (Priority: P2)
+### User Story 2 - AI Configuration (Priority: P2) `❌ Not Implemented`
 
 As a Super Admin, I want to update system prompts and switch models without code deploys.
 
@@ -40,7 +42,7 @@ As a Super Admin, I want to update system prompts and switch models without code
 2. **Given** I want to change the underlying model, **When** I switch the dropdown from "GPT-4" to "Claude 3.5", **Then** the system should immediately start using the new model for new requests.
 3. **Given** I edited a prompt previously, **When** I view the Prompt History, **Then** I should see all previous versions with timestamps and editor information, and have the ability to revert to any past version.
 
-### User Story 3 - Cost Auditing (Priority: P3)
+### User Story 3 - Cost Auditing (Priority: P3) `❌ Not Implemented`
 
 As a Super Admin, I want to identify which companies are spending the most on AI tokens.
 

@@ -7,6 +7,8 @@
 **Input**: Extracted from Feature 005 - Interview quota and balance enforcement for interview invitations
 **Note**: This feature focuses exclusively on interview quota limit enforcement. All interview subscription and billing logic is handled by Feature 005. Feature 008 provides the system-level enforcement layer for blocking actions that exceed interview quota.
 
+> **Admin Portal Status**: Not Implemented in `ai-talent-analyst-system-admin-portal`. Quota enforcement is pending Feature 005 implementation.
+
 ## User Scenarios & Testing _(mandatory)_
 
 <!--
@@ -14,7 +16,7 @@
   Each user story/journey must be INDEPENDENTLY TESTABLE.
 -->
 
-### User Story 1 - Block Interview Invitations When Quota Exhausted (Priority: P1)
+### User Story 1 - Block Interview Invitations When Quota Exhausted (Priority: P1) `❌ Not Implemented`
 
 As a System, I must block `Send Invitation` actions when a company exceeds their interview quota to prevent unauthorized interviews beyond their subscription limits.
 

@@ -5,9 +5,11 @@
 **Status**: Draft  
 **Input**: User description: "Tiered subscription packages (Gold Fish RM3600, Dolphin RM7200, Whale RM12000 per year) with per-interview billing. Individual interview purchase at RM15. Job Description creation is free. Subscription management, billing history, payment notifications, usage tracking."
 
+> **Admin Portal Status**: Not Implemented in `ai-talent-analyst-system-admin-portal`. This feature is planned for the company admin portal but has not been built yet.
+
 ## User Scenarios & Testing _(mandatory)_
 
-### User Story 1 - View Subscription Status & Interview Allocation (Priority: P1)
+### User Story 1 - View Subscription Status & Interview Allocation (Priority: P1) `❌ Not Implemented`
 
 Company Admins need to monitor their subscription tier, annual interview allocation, interviews used this year, account balance, and reserved quota to manage their recruitment capacity.
 
@@ -29,7 +31,7 @@ Company Admins need to monitor their subscription tier, annual interview allocat
 
 ---
 
-### User Story 2 - View Interview Usage History & Analytics (Priority: P1)
+### User Story 2 - View Interview Usage History & Analytics (Priority: P1) `❌ Not Implemented`
 
 Company Admins need to analyze interview consumption patterns over time to track hiring progress and forecast remaining quota.
 
@@ -51,7 +53,7 @@ Company Admins need to analyze interview consumption patterns over time to track
 
 ---
 
-### User Story 3 - View Billing History & Invoices (Priority: P1)
+### User Story 3 - View Billing History & Invoices (Priority: P1) `❌ Not Implemented`
 
 Company Admins need to access past invoices, receipts, and payment history for accounting, auditing, and expense tracking purposes.
 
@@ -73,7 +75,7 @@ Company Admins need to access past invoices, receipts, and payment history for a
 
 ---
 
-### User Story 4 - Receive Interview Quota Alerts (Priority: P2)
+### User Story 4 - Receive Interview Quota Alerts (Priority: P2) `❌ Not Implemented`
 
 Company Admins need automated alerts when interview usage reaches critical thresholds (80%, 100%) to plan upgrade or purchase decisions.
 
@@ -101,7 +103,7 @@ Company Admins need automated alerts when interview usage reaches critical thres
 
 ---
 
-### User Story 5 - Purchase Individual Interviews (Priority: P1)
+### User Story 5 - Purchase Individual Interviews (Priority: P1) `❌ Not Implemented`
 
 Company Admins on any subscription tier can purchase individual interviews at RM15 each when they run out of annual quota or want to conduct additional interviews. Purchases add to quota counter and deduct from account balance.
 
@@ -224,7 +226,6 @@ Company Admins on any subscription tier can purchase individual interviews at RM
 ### Key Entities
 
 - **SubscriptionPlan**: Defines the three tiered subscription plans with attributes:
-
   - name (Gold Fish, Dolphin, Whale)
   - annual_price_rmb (RM3600, RM7200, RM12000)
   - annual_interview_quota (300, 800, 2000)
@@ -233,7 +234,6 @@ Company Admins on any subscription tier can purchase individual interviews at RM
   - features (JSON/array of included features)
 
 - **CompanySubscription**: Links companies to their subscription with attributes:
-
   - id, company_id (FK), subscription_plan_id (FK)
   - status (active/suspended/cancelled)
   - subscription_start_date (the anniversary date for annual billing)
@@ -249,7 +249,6 @@ Company Admins on any subscription tier can purchase individual interviews at RM
   - created_at, updated_at
 
 - **InterviewCompletion**: Records each completed interview for quota consumption tracking with attributes:
-
   - id, company_id (FK), interview_id (FK), candidate_id (FK)
   - interview_completed_at (timestamp when interview was submitted)
   - quota_consumed_from (enum: plan_quota or individual_purchase)
@@ -258,7 +257,6 @@ Company Admins on any subscription tier can purchase individual interviews at RM
   - created_at
 
 - **BillingTransaction**: Stores all financial transactions (annual subscription billing, individual purchases, balance top-ups, interview settlements) with attributes:
-
   - id, company_id (FK)
   - transaction_type (annual_subscription / individual_interview_purchase / balance_topup / interview_settlement)
   - amount_rmb (positive for charges, based on plan or individual purchases)
@@ -275,7 +273,6 @@ Company Admins on any subscription tier can purchase individual interviews at RM
   - created_at, updated_at
 
 - **QuotaReservation**: Tracks reserved interview quota for pending invitations with attributes:
-
   - id, company_id (FK), interview_id (FK)
   - reserved_interview_count (typically 1 per invitation)
   - reserved_from (plan_quota or individual_purchase)
@@ -289,7 +286,6 @@ Company Admins on any subscription tier can purchase individual interviews at RM
   - created_at, updated_at
 
 - **PaymentMethod**: Stores payment method references with attributes:
-
   - id, company_id (FK)
   - type (bank_transfer, credit_card, etc.)
   - is_active (boolean)
